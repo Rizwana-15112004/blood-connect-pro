@@ -9,6 +9,8 @@ import { SixMonthDonationChart, generate6MonthData } from '@/components/dashboar
 import { RecentDonorsList } from '@/components/dashboard/RecentDonorsList';
 import { UrgentBloodAlert } from '@/components/dashboard/UrgentBloodAlert';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
 import { mockService } from '@/lib/mockData';
 // import { supabase } from '@/integrations/supabase/client';
 import { subDays, subMonths, startOfWeek, startOfMonth, format } from 'date-fns';
@@ -44,6 +46,40 @@ interface MonthlyDonation {
 
 export default function Dashboard() {
   const { isAdmin, user } = useAuth();
+  const { toast } = useToast();
+
+  const handleSelfReportDonation = async () => {
+    if (!window.confirm("Confirm that you donated blood today? This will update your records.")) return;
+
+    try {
+      const profile = await mockService.getProfile(user?.email);
+      if (profile) {
+        await mockService.addDonation({
+          donor_id: profile.id,
+          donation_date: new Date().toISOString(),
+          units_donated: 1,
+          blood_group: profile.blood_group,
+          donation_center: 'Self Reported',
+          collected_by: 'Self'
+        });
+
+        toast({
+          title: "Donation Recorded",
+          description: "Thank you! Your stats have been updated. You can now download your new certificate.",
+        });
+
+        fetchDashboardData();
+        fetchPersonalStats();
+      }
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Error",
+        description: "Failed to record donation.",
+        variant: "destructive"
+      });
+    }
+  };
 
   if (isAdmin) {
     return <AdminDashboard />;
@@ -210,14 +246,28 @@ export default function Dashboard() {
             subtitle={hasCheckedEligibility ? 'Based on WHO criteria' : 'Check eligibility to proceed'}
             icon={<Droplets className="h-6 w-6 text-purple-500" />}
             variant={hasCheckedEligibility ? (personalStats.isEligible ? 'success' : 'warning') : 'warning'}
-            description={!hasCheckedEligibility ? (
-              <button
-                onClick={handleCheckEligibility}
-                className="text-xs text-blue-600 hover:text-blue-800 underline font-medium mt-1"
-              >
-                Check Eligibility Now
-              </button>
-            ) : undefined}
+            description={
+              <div className="flex flex-col gap-1 mt-1">
+                {!hasCheckedEligibility && (
+                  <button
+                    onClick={handleCheckEligibility}
+                    className="text-xs text-blue-600 hover:text-blue-800 underline font-medium mt-1"
+                  >
+                    Check Eligibility Now
+                  </button>
+                )}
+                {hasCheckedEligibility && personalStats.isEligible && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSelfReportDonation}
+                    className="w-full mt-2 border-green-200 text-green-700 hover:bg-green-50 hover:text-green-800 h-8"
+                  >
+                    I Donated Today
+                  </Button>
+                )}
+              </div>
+            }
           />
         </div>
 
