@@ -57,14 +57,26 @@ export default function Dashboard() {
     isEligible: false
   });
 
-  const [hasCheckedEligibility, setHasCheckedEligibility] = useState(false);
+  // Persist eligibility check
+  const [hasCheckedEligibility, setHasCheckedEligibility] = useState(() => {
+    if (!user) return false;
+    return localStorage.getItem(`eligibility_checked_${user.id}`) === 'true';
+  });
+
+  useEffect(() => {
+    if (user) {
+      const stored = localStorage.getItem(`eligibility_checked_${user.id}`) === 'true';
+      setHasCheckedEligibility(stored);
+    }
+  }, [user]);
 
   const handleCheckEligibility = () => {
-    // In a real app, this might open a modal or redirect.
-    // For this task, we simulate "forcing" the check, then marking as done.
     const confirmed = window.confirm("Do you want to run the eligibility check now?");
     if (confirmed) {
       setHasCheckedEligibility(true);
+      if (user) {
+        localStorage.setItem(`eligibility_checked_${user.id}`, 'true');
+      }
     }
   };
 
