@@ -147,7 +147,12 @@ export default function Dashboard() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="text-3xl font-bold text-foreground">My Dashboard</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold text-foreground">My Dashboard</h1>
+            <span className="px-2 py-1 text-xs font-semibold bg-primary/10 text-primary rounded-full border border-primary/20">
+              Donor Portal
+            </span>
+          </div>
           <p className="mt-1 text-muted-foreground">
             Welcome back, {user?.email}
           </p>
@@ -184,7 +189,7 @@ export default function Dashboard() {
           />
           <StatCard
             title="Blood Status"
-            value={hasCheckedEligibility ? (personalStats.isEligible ? 'Eligible' : 'Waiting Period') : 'Action Required'}
+            value={hasCheckedEligibility ? (personalStats.isEligible ? 'Eligible' : 'Waiting Period') : 'Check Eligibility'}
             subtitle={hasCheckedEligibility ? 'Based on WHO criteria' : 'Check eligibility to proceed'}
             icon={<Droplets className="h-6 w-6 text-purple-500" />}
             variant={hasCheckedEligibility ? (personalStats.isEligible ? 'success' : 'warning') : 'warning'}
