@@ -61,7 +61,7 @@ export const MOCK_DONORS: Donor[] = [
     {
         id: '1',
         full_name: 'Laya',
-        email: 'laya@example.com',
+        email: 'laya@gmail.com',
         phone: '+1 987 654 3210',
         date_of_birth: '1995-01-01',
         gender: 'female',

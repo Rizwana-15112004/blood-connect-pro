@@ -51,12 +51,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (options.method && ['POST', 'PUT', 'DELETE'].includes(options.method)) {
       let csrftoken = getCSRFToken();
       if (!csrftoken) {
-        // If missing, hit the CSRF endpoint to set the cookie
+        // Try to get CSRF token, but don't crash if it fails (HTML response etc)
         try {
           await fetch('/api/csrf');
           csrftoken = getCSRFToken();
         } catch (e) {
-          console.warn("CSRF endpoint failed, proceeding without token (Demo Mode?)");
+          // Ignore error
         }
       }
 
@@ -68,43 +68,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       options.headers = headers as HeadersInit;
     }
 
-    options.credentials = 'same-origin'; // Send cookies with same-origin requests
+    options.credentials = 'same-origin';
     return fetch(url, options);
   };
 
   const checkAuth = async () => {
     try {
-      // First ensure CSRF cookie is present
       try {
         await fetch('/api/csrf', { credentials: 'same-origin' });
-      } catch (e) {
-        console.warn("CSRF check failed");
-      }
+      } catch (e) { /* ignore */ }
 
       const res = await fetchWithCSRF('/api/user');
 
-      // Check if response is JSON (it might be HTML 404/500 on Netlify)
+      // Strict JSON check
       const contentType = res.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("Invalid response from server");
+        throw new Error("Response is not JSON");
       }
 
       const data = await res.json();
-
       if (data.user) {
         setUser(data.user);
       } else {
         setUser(null);
       }
     } catch (error) {
-      console.warn("Auth check failed, falling back to potential local state or session.", error);
-      // Optional: Check localStorage for persistent demo session
-      const demoUser = localStorage.getItem('demo_user');
-      if (demoUser) {
-        setUser(JSON.parse(demoUser));
-      } else {
-        setUser(null);
-      }
+      console.warn("Auth check failed (Demo Mode Active)", error);
+      // Demo persistence
+      try {
+        const demoUser = localStorage.getItem('demo_user');
+        if (demoUser) {
+          setUser(JSON.parse(demoUser));
+        } else {
+          setUser(null);
+        }
+      } catch (e) { setUser(null); }
     } finally {
       setLoading(false);
     }
@@ -117,25 +115,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ email, password }),
       });
 
-      const contentType = res.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("Server not available");
-      }
-
+      if (!res.ok) throw new Error("API Error");
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Registration failed');
-      }
-
       setUser(data.user);
       return { error: null };
     } catch (error: any) {
-      console.warn("Registration API failed, using Mock Service", error);
-      // Fallback to Mock
-      // Simply log them in as a new donor for demo purposes
+      console.warn("Using Mock SignUp");
       const mockUser: User = {
-        id: Math.floor(Math.random() * 1000),
+        id: Math.floor(Math.random() * 10000),
         email: email,
         role: 'donor'
       };
@@ -147,35 +134,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      // Try real API first
       const res = await fetchWithCSRF('/api/login', {
         method: 'POST',
         body: JSON.stringify({ email, password }),
       });
 
+      // Validating response is JSON before parsing
       const contentType = res.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("Server not available");
+        throw new Error("Not JSON");
       }
 
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Login failed');
-      }
+      if (!res.ok) throw new Error(data.error || 'Login failed');
 
       setUser(data.user);
       return { error: null };
     } catch (error: any) {
-      console.warn("Login API failed, checking Mock Service", error);
+      console.warn("Using Mock SignIn");
 
-      // Fallback to Mock Data
+      // Exact match from mock data
       const profile = await mockService.getProfile(email);
 
-      // Simple password check simulation (accept any password for demo users, specific for admin)
       if (profile) {
+        // Mock Admin Check
         if (email === 'admin@example.com' && password !== 'admin') {
-          return { error: new Error('Invalid credentials (Try: admin)') };
+          return { error: new Error('Invalid credentials') };
         }
 
         const role = email === 'admin@example.com' ? 'admin' : 'donor';
@@ -189,7 +173,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { error: null };
       }
 
-      // If not in mock data, allow generic login for demo if it looks like a valid email
+      // Fallback for ANY email (Demo experience)
       if (email && password) {
         const mockUser: User = {
           id: 999,
@@ -201,21 +185,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { error: null };
       }
 
-      return { error: new Error('Login failed (Demo Mode)') };
+      return { error: new Error('Login failed') };
     }
   };
 
   const signOut = async () => {
     try {
       await fetchWithCSRF('/api/logout', { method: 'POST' });
-    } catch (error) {
-      console.warn("Logout API failed", error);
-    }
+    } catch (e) { }
 
-    // Always clear local state
     setUser(null);
     localStorage.removeItem('demo_user');
-    // specific navigation to prevent "back" button from restoring the session view
     window.location.href = '/';
   };
 
@@ -226,7 +206,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signIn,
     signOut,
     isAdmin: user?.role === 'admin',
-    isDonor: user?.role === 'donor', // Default to donor logic
+    isDonor: user?.role === 'donor',
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
