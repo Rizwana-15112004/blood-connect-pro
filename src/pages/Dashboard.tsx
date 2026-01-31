@@ -232,8 +232,7 @@ export default function Dashboard() {
             icon={<CalendarIcon className="h-6 w-6 text-blue-500" />}
           />
           <StatCard
-            title="Next Eligible Date"
-            value={personalStats.nextEligible
+            value={(personalStats.nextEligible && new Date(personalStats.nextEligible) > new Date())
               ? format(new Date(personalStats.nextEligible), 'MMM d, yyyy')
               : 'Available Now'}
             subtitle={personalStats.isEligible ? 'You can donate!' : 'Wait for safety'}

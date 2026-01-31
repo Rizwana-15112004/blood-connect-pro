@@ -13,7 +13,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, isEligible: boolean) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   isAdmin: boolean;
@@ -108,11 +108,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string, isEligible: boolean) => {
     try {
       const res = await fetchWithCSRF('/api/register', {
         method: 'POST',
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, isEligible }),
       });
 
       if (!res.ok) throw new Error("API Error");
@@ -138,7 +138,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         gender: 'other',
         blood_group: 'Unknown',
         weight: 0,
-        is_eligible: true
+        is_eligible: isEligible
       });
 
       const mockUser: User = {

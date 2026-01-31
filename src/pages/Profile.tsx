@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, Mail, Phone, MapPin, Droplets, Heart, Calendar } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Droplets, Heart, Calendar, Activity } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { SixMonthDonationChart, generate6MonthData } from '@/components/dashboard/SixMonthDonationChart';
@@ -197,6 +199,14 @@ export default function Profile() {
                   {profile.city}, {profile.state}
                 </span>
               )}
+            </div>
+            <div className="mt-4">
+              <Link to="/eligibility">
+                <Button variant="outline" size="sm" className="gap-2 border-primary/20 hover:bg-primary/5 text-primary">
+                  <Activity className="h-4 w-4" />
+                  Check Eligibility
+                </Button>
+              </Link>
             </div>
           </div>
           <BloodGroupBadge bloodGroup={profile.blood_group} size="lg" />

@@ -5,6 +5,7 @@ import { Heart, Mail, Lock, User, Eye, EyeOff, ArrowRight, Loader2 } from 'lucid
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Navbar } from '@/components/layout/Navbar';
@@ -14,6 +15,7 @@ export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [isEligible, setIsEligible] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { signIn, signUp, signOut, user } = useAuth();
@@ -117,7 +119,7 @@ export default function Auth() {
           return;
         }
 
-        const { error } = await signUp(email, password);
+        const { error } = await signUp(email, password, isEligible);
         if (error) {
           toast({
             title: 'Sign Up Failed',
@@ -290,6 +292,20 @@ export default function Auth() {
                         required
                       />
                     </div>
+                  </div>
+                )}
+
+                {!isLogin && (
+                  <div className="mt-4 mb-4 flex items-start space-x-2 px-1">
+                    <Checkbox
+                      id="eligibility"
+                      checked={isEligible}
+                      onCheckedChange={(c) => setIsEligible(!!c)}
+                      className="mt-1"
+                    />
+                    <Label htmlFor="eligibility" className="text-sm font-normal text-muted-foreground leading-snug cursor-pointer">
+                      I confirm that I meet the <span className="text-primary font-medium">basic eligibility criteria</span> to donate blood.
+                    </Label>
                   </div>
                 )}
 
