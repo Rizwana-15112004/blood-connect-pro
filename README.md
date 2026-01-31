@@ -6,7 +6,8 @@
 - Edit files directly within the Codespace and commit and push your changes once you're done.
 
 ## Developer
-**Developed by Rizwana Nazin**
+**Developed by Rapid.AI**
+*Contact: rappidapp.ai@gmail.com*
 *BCA Final Year Project*
 
 ## What technologies are used for this project?

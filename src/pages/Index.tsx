@@ -228,7 +228,7 @@ export default function Index() {
           </div>
         </div>
         <div className="mt-12 pt-8 border-t border-slate-800 text-center text-sm text-slate-500">
-          © 2026 BloodLife. Developed by Rizwana Nazin.
+          © 2026 BloodLife. Developed by Rapid.AI.
         </div>
       </footer>
     </div>
