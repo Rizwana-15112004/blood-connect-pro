@@ -121,6 +121,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error: null };
     } catch (error: any) {
       console.warn("Using Mock SignUp");
+
+      // Check if user already exists
+      const existing = await mockService.verifyCredentials(email);
+      if (existing) {
+        return { error: new Error("User already exists. Please Sign In.") };
+      }
+
+      // Register new user in mock DB. Pass minimal required fields.
+      // addDonor expects: full_name, email, phone, date_of_birth, gender, blood_group, weight, is_eligible
+      await mockService.addDonor({
+        full_name: email.split('@')[0],
+        email: email,
+        phone: '',
+        date_of_birth: '', // Profile will prompt for this
+        gender: 'other',
+        blood_group: 'Unknown',
+        weight: 0,
+        is_eligible: true
+      });
+
       const mockUser: User = {
         id: Math.floor(Math.random() * 10000),
         email: email,
@@ -153,39 +173,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error: any) {
       console.warn("Using Mock SignIn");
 
-      // Exact match from mock data
-      const profile = await mockService.getProfile(email);
+      // Verify against mock DB
+      const verifiedUser = await mockService.verifyCredentials(email);
 
-      if (profile) {
-        // Mock Admin Check
+      if (verifiedUser) {
+        // Admin password check
         if (email === 'admin@example.com' && password !== 'admin') {
           return { error: new Error('Invalid credentials') };
         }
 
-        const role = email === 'admin@example.com' ? 'admin' : 'donor';
-        const mockUser: User = {
-          id: parseInt(profile.id) || 1,
-          email: profile.email,
-          role: role as AppRole
+        const appUser: User = {
+          id: Number(verifiedUser.id) || 999,
+          email: verifiedUser.email,
+          role: verifiedUser.role as AppRole
         };
-        setUser(mockUser);
-        localStorage.setItem('demo_user', JSON.stringify(mockUser));
+        setUser(appUser);
+        localStorage.setItem('demo_user', JSON.stringify(appUser));
         return { error: null };
       }
 
-      // Fallback for ANY email (Demo experience)
-      if (email && password) {
-        const mockUser: User = {
-          id: 999,
-          email: email,
-          role: 'donor'
-        };
-        setUser(mockUser);
-        localStorage.setItem('demo_user', JSON.stringify(mockUser));
-        return { error: null };
-      }
-
-      return { error: new Error('Login failed') };
+      // No fallback allowed!
+      return { error: new Error('User not found. Please Sign Up.') };
     }
   };
 

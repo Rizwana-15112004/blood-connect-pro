@@ -444,6 +444,30 @@ export const mockService = {
         }));
     },
 
+    verifyCredentials: async (email: string) => {
+        await delay(300);
+        if (email === 'admin@example.com') {
+            // Admin pseudo-user
+            return {
+                id: 'admin',
+                full_name: 'System Administrator',
+                email: 'admin@example.com',
+                role: 'admin'
+            };
+        }
+
+        const donor = donorsStore.find(d => d.email === email);
+        if (donor) {
+            return {
+                id: donor.id,
+                full_name: donor.full_name,
+                email: donor.email,
+                role: 'donor'
+            };
+        }
+        return null;
+    },
+
     addDonor: async (donor: Omit<Donor, 'id' | 'total_donations' | 'last_donation_date' | 'registered_at'>) => {
         await delay(500);
         const newDonor: Donor = {
