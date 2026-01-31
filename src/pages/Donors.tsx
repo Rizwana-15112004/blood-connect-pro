@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { mockService, Donor } from '@/lib/mockData';
 // import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -28,16 +28,21 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-// interface Donor ... (Imported from mockData)
+// ...
 
 export default function Donors() {
+  const { isAdmin } = useAuth();
+
+  if (!isAdmin) {
+    return <Navigate to="/" replace />;
+  }
+
   const [donors, setDonors] = useState<Donor[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [bloodGroupFilter, setBloodGroupFilter] = useState<string>('all');
   const [eligibilityFilter, setEligibilityFilter] = useState<string>('all');
   const navigate = useNavigate();
-  const { isAdmin } = useAuth();
   const [showAddForm, setShowAddForm] = useState(false);
   const [newDonor, setNewDonor] = useState({
     full_name: '',

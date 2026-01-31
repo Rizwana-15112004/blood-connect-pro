@@ -47,11 +47,11 @@ export function calculateAge(dateOfBirth: Date): number {
   const today = new Date();
   let age = today.getFullYear() - dateOfBirth.getFullYear();
   const monthDiff = today.getMonth() - dateOfBirth.getMonth();
-  
+
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dateOfBirth.getDate())) {
     age--;
   }
-  
+
   return age;
 }
 
@@ -104,14 +104,14 @@ export function checkEligibility(data: DonorHealthData): EligibilityResult {
 
   // Blood pressure check
   if (data.bloodPressureSystolic && data.bloodPressureDiastolic) {
-    if (data.bloodPressureSystolic < WHO_CRITERIA.minBloodPressureSystolic || 
-        data.bloodPressureSystolic > WHO_CRITERIA.maxBloodPressureSystolic) {
+    if (data.bloodPressureSystolic < WHO_CRITERIA.minBloodPressureSystolic ||
+      data.bloodPressureSystolic > WHO_CRITERIA.maxBloodPressureSystolic) {
       reasons.push(`Systolic BP out of range (${WHO_CRITERIA.minBloodPressureSystolic}-${WHO_CRITERIA.maxBloodPressureSystolic} mmHg)`);
       healthScore -= 15;
       category = 'temporarily_ineligible';
     }
-    if (data.bloodPressureDiastolic < WHO_CRITERIA.minBloodPressureDiastolic || 
-        data.bloodPressureDiastolic > WHO_CRITERIA.maxBloodPressureDiastolic) {
+    if (data.bloodPressureDiastolic < WHO_CRITERIA.minBloodPressureDiastolic ||
+      data.bloodPressureDiastolic > WHO_CRITERIA.maxBloodPressureDiastolic) {
       reasons.push(`Diastolic BP out of range (${WHO_CRITERIA.minBloodPressureDiastolic}-${WHO_CRITERIA.maxBloodPressureDiastolic} mmHg)`);
       healthScore -= 15;
       category = 'temporarily_ineligible';
@@ -228,6 +228,6 @@ export function getBloodGroupCompatibility(bloodGroup: BloodGroup): {
     'O+': { canDonateTo: ['A+', 'B+', 'AB+', 'O+'], canReceiveFrom: ['O+', 'O-'] },
     'O-': { canDonateTo: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'], canReceiveFrom: ['O-'] },
   };
-  
-  return compatibility[bloodGroup];
+
+  return compatibility[bloodGroup] || { canDonateTo: [], canReceiveFrom: [] };
 }

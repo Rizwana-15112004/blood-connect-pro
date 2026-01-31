@@ -434,6 +434,20 @@ export const mockService = {
         }));
     },
 
+    addDonor: async (donor: Omit<Donor, 'id' | 'total_donations' | 'last_donation_date' | 'registered_at'>) => {
+        await delay(500);
+        const newDonor: Donor = {
+            ...donor,
+            id: Math.random().toString(36).substr(2, 9),
+            total_donations: 0,
+            last_donation_date: null,
+            registered_at: new Date().toISOString(),
+            is_eligible: true
+        };
+        donorsStore.unshift(newDonor);
+        return newDonor;
+    },
+
     getUpcomingDonations: async () => {
         await delay(400);
         // Generate some future donations for the calendar
