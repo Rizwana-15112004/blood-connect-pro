@@ -358,10 +358,14 @@ export const mockService = {
         return donorsStore;
     },
 
-    getDonations: async () => {
+    getDonations: async (donorId?: string) => {
         await delay(600);
+        let data = [...donationsStore];
+        if (donorId) {
+            data = data.filter(d => d.donor_id === donorId);
+        }
         // Sort by date desc
-        return [...donationsStore].sort((a, b) => new Date(b.donation_date).getTime() - new Date(a.donation_date).getTime());
+        return data.sort((a, b) => new Date(b.donation_date).getTime() - new Date(a.donation_date).getTime());
     },
 
     getProfile: async (email?: string) => {
@@ -384,7 +388,27 @@ export const mockService = {
                 state: 'HQ',
             } as Donor;
         }
-        return donorsStore.find(d => d.email === email) || donorsStore[0];
+
+        const existing = donorsStore.find(d => d.email === email);
+        if (existing) return existing;
+
+        // Return empty profile for new/unknown users
+        return {
+            id: email || 'guest', // Use email as ID for simplicity in mock
+            full_name: email?.split('@')[0] || 'Guest',
+            email: email || '',
+            phone: '',
+            date_of_birth: '',
+            gender: 'other',
+            blood_group: 'Unknown',
+            weight: 0,
+            is_eligible: true, // Default to true? Or false until updated? True triggers "Eligible" status.
+            total_donations: 0,
+            last_donation_date: null,
+            registered_at: new Date().toISOString(),
+            city: '',
+            state: '',
+        } as Donor;
     },
 
     getDashboardStats: async () => {
@@ -456,9 +480,13 @@ export const mockService = {
     },
 
     // Blood Request Methods
-    getRequests: async () => {
+    getRequests: async (userId?: string) => {
         await delay(300);
-        return [...requestsStore].sort((a, b) => new Date(b.request_date).getTime() - new Date(a.request_date).getTime());
+        let data = [...requestsStore];
+        if (userId) {
+            data = data.filter(r => r.requester_id === userId);
+        }
+        return data.sort((a, b) => new Date(b.request_date).getTime() - new Date(a.request_date).getTime());
     },
 
     addRequest: async (request: Omit<BloodRequest, 'id' | 'status' | 'request_date' | 'assigned_donor_id'>) => {

@@ -104,11 +104,16 @@ export default function Dashboard() {
 
   const fetchDashboardData = async () => {
     try {
+      // If we are a donor, we need our ID to filter donations.
+      // useAuth user.id matches the mockData id (mostly).
+      const donorId = (!isAdmin && user) ? String(user.id) : undefined;
+
       const [dashboardStats, inventory, recent, donations] = await Promise.all([
         mockService.getDashboardStats(),
         mockService.getInventory(),
         mockService.getRecentDonors(),
-        mockService.getDonations()
+        // Pass donorId to filter donations if not admin
+        mockService.getDonations(donorId)
       ]);
 
       setStats(dashboardStats);
@@ -123,7 +128,7 @@ export default function Dashboard() {
       })).filter(item => item.value > 0);
       setBloodGroupChartData(chartData);
 
-      // Process Monthly Donations
+      // Process Monthly Donations (This will now be filtered for the donor)
       const sixMonthData = generate6MonthData(donations);
       setMonthlyDonations(sixMonthData);
 

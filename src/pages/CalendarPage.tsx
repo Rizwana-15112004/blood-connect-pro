@@ -55,35 +55,25 @@ export default function CalendarPage() {
 
   const fetchDonorData = async () => {
     try {
-      // Get donor profile
-      const { data: donorData } = await supabase
-        .from('donors')
-        .select('id, last_donation_date')
-        .eq('user_id', String(user?.id))
-        .maybeSingle();
+      // Use mockService to align with Dashboard logic and support Demo Mode data isolation
+      const donorId = String(user?.id);
+      const donationsData = await mockService.getDonations(donorId);
 
-      if (donorData) {
-        // Fetch donations
-        const { data: donationsData } = await supabase
-          .from('donations')
-          .select('donation_date, units_donated')
-          .eq('donor_id', donorData.id)
-          .order('donation_date', { ascending: false });
+      const mappedDonations = donationsData.map(d => ({
+        date: new Date(d.donation_date),
+        units: Number(d.units_donated),
+      }));
 
-        setDonations(
-          donationsData?.map(d => ({
-            date: new Date(d.donation_date),
-            units: Number(d.units_donated),
-          })) || []
-        );
+      setDonations(mappedDonations);
 
-        // Calculate next eligible date
-        if (donorData.last_donation_date) {
-          const nextDate = calculateNextEligibleDate(new Date(donorData.last_donation_date));
-          setNextEligibleDate(nextDate);
-        } else {
-          setNextEligibleDate(new Date()); // Eligible now if never donated
-        }
+      // Calculate next eligible date based on latest donation
+      if (mappedDonations.length > 0) {
+        // donationsData is already sorted desc by date in mockService
+        const lastDonationDate = mappedDonations[0].date;
+        const nextDate = calculateNextEligibleDate(lastDonationDate);
+        setNextEligibleDate(nextDate);
+      } else {
+        setNextEligibleDate(new Date()); // Eligible now if never donated
       }
     } catch (error) {
       console.error('Error fetching donor data:', error);
