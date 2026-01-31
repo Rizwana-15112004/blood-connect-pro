@@ -390,7 +390,17 @@ export const mockService = {
         }
 
         const existing = donorsStore.find(d => d.email === email);
-        if (existing) return existing;
+        if (existing) {
+            // Calculate real-time stats from donationsStore to ensure consistency
+            const userDonations = donationsStore.filter(d => d.donor_id === existing.id);
+            userDonations.sort((a, b) => new Date(b.donation_date).getTime() - new Date(a.donation_date).getTime());
+
+            return {
+                ...existing,
+                total_donations: userDonations.length,
+                last_donation_date: userDonations.length > 0 ? userDonations[0].donation_date : null
+            };
+        }
 
         // Return empty profile for new/unknown users
         return {
