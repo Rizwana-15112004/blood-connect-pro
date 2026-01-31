@@ -12,7 +12,7 @@ interface StatCardProps {
     isPositive?: boolean;
     label?: string;
   };
-  description?: string;
+  description?: ReactNode;
   variant?: 'default' | 'primary' | 'success' | 'warning';
   className?: string;
 }

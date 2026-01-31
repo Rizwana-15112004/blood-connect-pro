@@ -453,5 +453,66 @@ export const mockService = {
         }
 
         return newDonation;
+    },
+
+    // Blood Request Methods
+    getRequests: async () => {
+        await delay(300);
+        return [...requestsStore].sort((a, b) => new Date(b.request_date).getTime() - new Date(a.request_date).getTime());
+    },
+
+    addRequest: async (request: Omit<BloodRequest, 'id' | 'status' | 'request_date' | 'assigned_donor_id'>) => {
+        await delay(500);
+        const newRequest: BloodRequest = {
+            ...request,
+            id: Math.random().toString(36).substr(2, 9),
+            status: 'pending',
+            request_date: new Date().toISOString(),
+            assigned_donor_id: null
+        };
+        requestsStore.unshift(newRequest);
+        return newRequest;
+    },
+
+    updateRequestStatus: async (id: string, status: 'approved' | 'rejected' | 'pending', assignedDonorId?: string) => {
+        await delay(400);
+        const req = requestsStore.find(r => r.id === id);
+        if (req) {
+            req.status = status;
+            if (assignedDonorId) {
+                req.assigned_donor_id = assignedDonorId;
+            }
+        }
+        return req;
     }
 };
+
+export interface BloodRequest {
+    id: string;
+    requester_id: string; // The user ID of who requested (can be donor requesting for self/family)
+    patient_name: string;
+    blood_group: string;
+    units: number;
+    reason: string;
+    location: string;
+    status: 'pending' | 'approved' | 'rejected';
+    assigned_donor_id: string | null;
+    request_date: string;
+}
+
+const MOCK_REQUESTS: BloodRequest[] = [
+    {
+        id: 'req1',
+        requester_id: '2', // Jane
+        patient_name: 'John Doe',
+        blood_group: 'A+',
+        units: 2,
+        reason: 'Surgery',
+        location: 'City Hospital',
+        status: 'pending',
+        assigned_donor_id: null,
+        request_date: subDays(new Date(), 1).toISOString()
+    }
+];
+
+let requestsStore = [...MOCK_REQUESTS];

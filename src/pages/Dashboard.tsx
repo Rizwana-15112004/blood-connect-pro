@@ -12,6 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { mockService } from '@/lib/mockData';
 // import { supabase } from '@/integrations/supabase/client';
 import { subDays, subMonths, startOfWeek, startOfMonth, format } from 'date-fns';
+import { BloodRequestSection } from '@/components/dashboard/BloodRequestSection';
 import AdminDashboard from './AdminDashboard';
 
 interface DashboardStats {
@@ -55,6 +56,17 @@ export default function Dashboard() {
     nextEligible: null as string | null,
     isEligible: false
   });
+
+  const [hasCheckedEligibility, setHasCheckedEligibility] = useState(false);
+
+  const handleCheckEligibility = () => {
+    // In a real app, this might open a modal or redirect.
+    // For this task, we simulate "forcing" the check, then marking as done.
+    const confirmed = window.confirm("Do you want to run the eligibility check now?");
+    if (confirmed) {
+      setHasCheckedEligibility(true);
+    }
+  };
 
   // Admin/General Stats Data
   const [stats, setStats] = useState<DashboardStats>({
@@ -172,10 +184,18 @@ export default function Dashboard() {
           />
           <StatCard
             title="Blood Status"
-            value={personalStats.isEligible ? 'Eligible' : 'Waiting Period'}
-            subtitle="Based on WHO criteria"
+            value={hasCheckedEligibility ? (personalStats.isEligible ? 'Eligible' : 'Waiting Period') : 'Action Required'}
+            subtitle={hasCheckedEligibility ? 'Based on WHO criteria' : 'Check eligibility to proceed'}
             icon={<Droplets className="h-6 w-6 text-purple-500" />}
-            variant={personalStats.isEligible ? 'success' : 'warning'}
+            variant={hasCheckedEligibility ? (personalStats.isEligible ? 'success' : 'warning') : 'warning'}
+            description={!hasCheckedEligibility ? (
+              <button
+                onClick={handleCheckEligibility}
+                className="text-xs text-blue-600 hover:text-blue-800 underline font-medium mt-1"
+              >
+                Check Eligibility Now
+              </button>
+            ) : undefined}
           />
         </div>
 
@@ -186,21 +206,20 @@ export default function Dashboard() {
             title="Blood Group Distribution"
             subtitle="Current inventory by blood type"
           />
-          <NewDonorsDonutChart
-            totalDonors={stats.totalDonors}
-            thisWeek={stats.thisWeekDonors}
-            thisMonth={stats.thisMonthDonors}
-            lastMonth={stats.lastMonthDonors}
-          />
+          {/* Removed NewDonorsDonutChart for Donor View */}
+          <div className="hidden lg:block"></div> {/* Spacer or just allow it to take full width if we adjust grid cols, but keeping grid-cols-2 for layout consistency or remove this div */}
         </div>
 
-        {/* 6-Month Chart and Recent Donors */}
-        <div className="grid gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2">
+        {/* 6-Month Chart */}
+        <div className="grid gap-6 lg:grid-cols-1"> {/* Changed to 1 col since we removed RecentDonorsList */}
+          <div className="">
             <SixMonthDonationChart data={monthlyDonations} />
           </div>
-          <RecentDonorsList donors={recentDonors} />
+          {/* Removed RecentDonorsList for Donor View */}
         </div>
+
+        {/* Requests Section */}
+        <BloodRequestSection userId={user?.id || ''} />
       </div>
     </DashboardLayout>
   );

@@ -59,7 +59,7 @@ export default function CalendarPage() {
       const { data: donorData } = await supabase
         .from('donors')
         .select('id, last_donation_date')
-        .eq('user_id', user?.id)
+        .eq('user_id', String(user?.id))
         .maybeSingle();
 
       if (donorData) {
@@ -88,6 +88,24 @@ export default function CalendarPage() {
     } catch (error) {
       console.error('Error fetching donor data:', error);
     }
+  };
+
+  const handleAddDonation = (date: Date, units: number) => {
+    const newDonation = { date, units };
+    const updatedDonations = [...donations, newDonation];
+
+    // Sort by date descending
+    updatedDonations.sort((a, b) => b.date.getTime() - a.date.getTime());
+
+    setDonations(updatedDonations);
+
+    // Recalculate next eligible date based on the most recent donation
+    if (updatedDonations.length > 0) {
+      // Assuming first item is latest after sort
+      setNextEligibleDate(calculateNextEligibleDate(updatedDonations[0].date));
+    }
+
+    // In a real app, we would persist this to Supabase here
   };
 
   return (
@@ -168,6 +186,7 @@ export default function CalendarPage() {
             <DonationCalendar
               donations={donations}
               nextEligibleDate={nextEligibleDate}
+              onAddDonation={handleAddDonation}
             />
 
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

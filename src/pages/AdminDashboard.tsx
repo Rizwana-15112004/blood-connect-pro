@@ -8,6 +8,7 @@ import { NewDonorsDonutChart } from '@/components/dashboard/NewDonorsDonutChart'
 import { RecentDonorsList } from '@/components/dashboard/RecentDonorsList';
 import { UrgentBloodAlert } from '@/components/dashboard/UrgentBloodAlert';
 import { mockService, InventoryItem } from '@/lib/mockData';
+import { AdminRequestManager } from '@/components/dashboard/AdminRequestManager';
 
 export default function AdminDashboard() {
     const [loading, setLoading] = useState(true);
@@ -22,6 +23,7 @@ export default function AdminDashboard() {
     });
     const [inventory, setInventory] = useState<InventoryItem[]>([]);
     const [recentDonors, setRecentDonors] = useState<any[]>([]);
+    const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
 
     useEffect(() => {
         fetchAdminData();
@@ -32,10 +34,12 @@ export default function AdminDashboard() {
             const dashboardStats = await mockService.getDashboardStats();
             const inventoryData = await mockService.getInventory();
             const recentDonorsData = await mockService.getRecentDonors();
+            const requests = await mockService.getRequests();
 
             setStats(dashboardStats);
             setInventory(inventoryData);
             setRecentDonors(recentDonorsData);
+            setPendingRequestsCount(requests.filter(r => r.status === 'pending').length);
         } catch (error) {
             console.error('Error fetching admin data:', error);
         } finally {
@@ -85,7 +89,7 @@ export default function AdminDashboard() {
                 {/* Urgent Alerts */}
                 <UrgentBloodAlert inventory={inventory} />
 
-                {/* Stats Grid - "Cards we can see dynamically" */}
+                {/* Stats Grid */}
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                     <StatCard
                         title="Total Donors"
@@ -103,7 +107,7 @@ export default function AdminDashboard() {
                     />
                     <StatCard
                         title="New Requests"
-                        value={8} // Placeholder for requests
+                        value={pendingRequestsCount}
                         icon={<Activity className="h-5 w-5 text-emerald-600" />}
                         description="Pending approval"
                         className="bg-emerald-50/50 dark:bg-emerald-950/10 border-emerald-100 dark:border-emerald-900"
@@ -147,6 +151,11 @@ export default function AdminDashboard() {
                         </button>
                     </div>
                     <RecentDonorsList donors={recentDonors} />
+                </div>
+
+                {/* Blood Requests Management */}
+                <div className="rounded-xl border bg-card p-6 shadow-sm">
+                    <AdminRequestManager />
                 </div>
             </motion.div>
         </DashboardLayout>
