@@ -1,8 +1,9 @@
 import { motion } from 'framer-motion';
-import { Award, Download, Share2 } from 'lucide-react';
+import { Award, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Donor } from '@/lib/mockData';
+import { jsPDF } from 'jspdf';
 
 interface CertificateCardProps {
     donor: Donor;
@@ -12,11 +13,88 @@ export function CertificateCard({ donor }: CertificateCardProps) {
     const { toast } = useToast();
 
     const handleDownload = () => {
-        // Simulate download
-        toast({
-            title: 'Certificate Downloaded',
-            description: 'Your Certificate of Appreciation has been saved.',
-        });
+        try {
+            const doc = new jsPDF({
+                orientation: 'landscape',
+                unit: 'mm',
+                format: 'a4',
+            });
+
+            // Colors
+            const primaryColor = '#dc2626'; // Red
+            const goldColor = '#d97706';    // Amber
+
+            // Border
+            doc.setLineWidth(2);
+            doc.setDrawColor(goldColor);
+            doc.rect(10, 10, 277, 190);
+            doc.setLineWidth(1);
+            doc.setDrawColor(primaryColor);
+            doc.rect(15, 15, 267, 180);
+
+            // Mock Logo Placeholder (Text)
+            doc.setFontSize(24);
+            doc.setTextColor(primaryColor);
+            doc.setFont("helvetica", "bold");
+            doc.text("BloodConnect Pro", 148.5, 40, { align: 'center' });
+
+            // Title
+            doc.setFontSize(40);
+            doc.setTextColor(goldColor);
+            doc.setFont("times", "bolditalic");
+            doc.text("Certificate of Appreciation", 148.5, 70, { align: 'center' });
+
+            // Presented to
+            doc.setFontSize(16);
+            doc.setTextColor('#333333');
+            doc.setFont("helvetica", "normal");
+            doc.text("This certificate is proudly presented to", 148.5, 95, { align: 'center' });
+
+            // Name
+            doc.setFontSize(32);
+            doc.setTextColor('#000000');
+            doc.setFont("helvetica", "bold");
+            doc.text(donor.full_name.toUpperCase(), 148.5, 115, { align: 'center' });
+            doc.setLineWidth(0.5);
+            doc.line(70, 117, 227, 117); // Underline
+
+            // Achievement
+            doc.setFontSize(16);
+            doc.setTextColor('#333333');
+            doc.setFont("helvetica", "normal");
+            doc.text(`In recognition of your selfless contribution of`, 148.5, 135, { align: 'center' });
+
+            doc.setFontSize(22);
+            doc.setTextColor(primaryColor);
+            doc.setFont("helvetica", "bold");
+            doc.text(`${donor.total_donations} Blood Donations`, 148.5, 148, { align: 'center' });
+
+            doc.setFontSize(16);
+            doc.setTextColor('#333333');
+            doc.setFont("helvetica", "normal");
+            doc.text(`helping to save lives and support our community.`, 148.5, 160, { align: 'center' });
+
+            // Date & Signature
+            const today = new Date().toLocaleDateString();
+            doc.setFontSize(12);
+            doc.text(`Date: ${today}`, 50, 180);
+            doc.text("_______________________", 220, 180);
+            doc.text("Authorized Signature", 225, 187);
+
+            doc.save(`Certificate_${donor.full_name.replace(/\s+/g, '_')}.pdf`);
+
+            toast({
+                title: 'Certificate Downloaded',
+                description: 'Your Certificate of Appreciation has been saved.',
+            });
+        } catch (error) {
+            console.error(error);
+            toast({
+                title: 'Download Failed',
+                description: 'Could not generate certificate. Please try again.',
+                variant: 'destructive',
+            });
+        }
     };
 
     return (
@@ -44,11 +122,7 @@ export function CertificateCard({ donor }: CertificateCardProps) {
                 <div className="mt-2 flex gap-3">
                     <Button onClick={handleDownload} className="gap-2 bg-amber-600 hover:bg-amber-700 text-white">
                         <Download className="h-4 w-4" />
-                        Download PDF
-                    </Button>
-                    <Button variant="outline" className="gap-2 border-amber-200 hover:bg-amber-100 dark:border-amber-800 dark:hover:bg-amber-900/50">
-                        <Share2 className="h-4 w-4" />
-                        Share
+                        Download Certificate
                     </Button>
                 </div>
             </div>
