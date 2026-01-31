@@ -1,7 +1,9 @@
 {
   "name": "vite_react_shadcn_ts",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "author": "Rizwana Nazin",
+  "description": "Blood Donation Management System - BCA Final Year Project",
   "type": "module",
   "scripts": {
     "dev": "vite",
