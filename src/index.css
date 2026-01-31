@@ -1,0 +1,319 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Blood Donation Management System - Professional Medical Design System */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap');
+
+@layer base {
+  :root {
+    /* Core Colors - Medical Red Theme */
+    --background: 0 0% 98%;
+    --foreground: 220 20% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 15%;
+
+    /* Primary - Deep Blood Red */
+    --primary: 0 72% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary - Warm Gray */
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 20% 25%;
+
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 10% 46%;
+
+    /* Accent - Coral/Pink for highlights */
+    --accent: 354 70% 54%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Success - For eligible status */
+    --success: 142 72% 42%;
+    --success-foreground: 0 0% 100%;
+
+    /* Warning - For caution */
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 0 72% 45%;
+
+    --radius: 0.75rem;
+
+    /* Chart Colors */
+    --chart-1: 0 72% 45%;
+    --chart-2: 354 70% 54%;
+    --chart-3: 38 92% 50%;
+    --chart-4: 142 72% 42%;
+    --chart-5: 220 70% 50%;
+    --chart-6: 280 70% 50%;
+    --chart-7: 170 70% 45%;
+    --chart-8: 45 85% 55%;
+
+    /* Blood Group Colors */
+    --blood-a-positive: 0 72% 45%;
+    --blood-a-negative: 0 65% 55%;
+    --blood-b-positive: 354 70% 50%;
+    --blood-b-negative: 354 60% 60%;
+    --blood-ab-positive: 280 60% 50%;
+    --blood-ab-negative: 280 50% 60%;
+    --blood-o-positive: 220 70% 50%;
+    --blood-o-negative: 220 60% 60%;
+
+    /* Gradient Definitions */
+    --gradient-primary: linear-gradient(135deg, hsl(0, 72%, 45%) 0%, hsl(354, 70%, 54%) 100%);
+    --gradient-hero: linear-gradient(180deg, hsl(0, 0%, 100%) 0%, hsl(0, 50%, 97%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(0, 0%, 100%) 0%, hsl(0, 20%, 98%) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(142, 72%, 42%) 0%, hsl(160, 72%, 38%) 100%);
+    --gradient-danger: linear-gradient(135deg, hsl(0, 84%, 60%) 0%, hsl(0, 72%, 45%) 100%);
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.1), 0 2px 4px -2px hsl(0 0% 0% / 0.1);
+    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.1), 0 4px 6px -4px hsl(0 0% 0% / 0.1);
+    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.1), 0 8px 10px -6px hsl(0 0% 0% / 0.1);
+    --shadow-primary: 0 4px 14px 0 hsl(0 72% 45% / 0.25);
+    --shadow-card: 0 4px 20px -2px hsl(0 0% 0% / 0.08);
+
+    /* Sidebar */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 220 20% 25%;
+    --sidebar-primary: 0 72% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 50% 97%;
+    --sidebar-accent-foreground: 0 72% 45%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 0 72% 45%;
+  }
+
+  .dark {
+    --background: 220 25% 8%;
+    --foreground: 0 0% 95%;
+
+    --card: 220 25% 12%;
+    --card-foreground: 0 0% 95%;
+
+    --popover: 220 25% 12%;
+    --popover-foreground: 0 0% 95%;
+
+    --primary: 0 65% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 20% 18%;
+    --secondary-foreground: 0 0% 90%;
+
+    --muted: 220 20% 18%;
+    --muted-foreground: 220 10% 60%;
+
+    --accent: 354 60% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 60% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 80% 55%;
+    --warning-foreground: 0 0% 0%;
+
+    --border: 220 20% 20%;
+    --input: 220 20% 20%;
+    --ring: 0 65% 55%;
+
+    --sidebar-background: 220 25% 10%;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 0 65% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 20% 15%;
+    --sidebar-accent-foreground: 0 65% 55%;
+    --sidebar-border: 220 20% 18%;
+    --sidebar-ring: 0 65% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+
+  .font-display {
+    font-family: 'Playfair Display', Georgia, serif;
+  }
+}
+
+@layer components {
+  /* Stat Card Styles */
+  .stat-card {
+    @apply relative overflow-hidden rounded-xl border bg-card p-6 transition-all duration-300;
+    box-shadow: var(--shadow-card);
+  }
+
+  .stat-card:hover {
+    @apply -translate-y-1;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .stat-card-primary {
+    background: var(--gradient-primary);
+    @apply text-white border-0;
+  }
+
+  .stat-card-success {
+    background: var(--gradient-success);
+    @apply text-white border-0;
+  }
+
+  /* Blood Group Badge */
+  .blood-badge {
+    @apply inline-flex items-center justify-center rounded-full px-3 py-1 text-sm font-bold;
+  }
+
+  .blood-badge-a-pos { @apply bg-red-100 text-red-700; }
+  .blood-badge-a-neg { @apply bg-red-50 text-red-600; }
+  .blood-badge-b-pos { @apply bg-pink-100 text-pink-700; }
+  .blood-badge-b-neg { @apply bg-pink-50 text-pink-600; }
+  .blood-badge-ab-pos { @apply bg-purple-100 text-purple-700; }
+  .blood-badge-ab-neg { @apply bg-purple-50 text-purple-600; }
+  .blood-badge-o-pos { @apply bg-blue-100 text-blue-700; }
+  .blood-badge-o-neg { @apply bg-blue-50 text-blue-600; }
+
+  /* Eligibility Status */
+  .eligibility-eligible {
+    @apply bg-green-100 text-green-700 border-green-200;
+  }
+
+  .eligibility-not-eligible {
+    @apply bg-red-100 text-red-700 border-red-200;
+  }
+
+  .eligibility-pending {
+    @apply bg-yellow-100 text-yellow-700 border-yellow-200;
+  }
+
+  /* Dashboard Grid */
+  .dashboard-grid {
+    @apply grid gap-6;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+
+  /* Chart Container */
+  .chart-container {
+    @apply rounded-xl border bg-card p-6;
+    box-shadow: var(--shadow-card);
+  }
+
+  /* Sidebar styles */
+  .sidebar-link {
+    @apply flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200;
+    @apply text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground;
+  }
+
+  .sidebar-link-active {
+    @apply bg-primary text-primary-foreground;
+    box-shadow: var(--shadow-primary);
+  }
+
+  /* Form styles */
+  .form-section {
+    @apply space-y-4 rounded-xl border bg-card p-6;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .form-section-title {
+    @apply text-lg font-semibold text-foreground mb-4 pb-2 border-b;
+  }
+
+  /* Table styles */
+  .data-table {
+    @apply w-full rounded-xl border bg-card overflow-hidden;
+    box-shadow: var(--shadow-card);
+  }
+
+  .data-table th {
+    @apply bg-muted/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground;
+  }
+
+  .data-table td {
+    @apply px-4 py-3 text-sm;
+  }
+
+  .data-table tbody tr {
+    @apply border-t transition-colors hover:bg-muted/30;
+  }
+
+  /* Calendar highlight */
+  .donation-day {
+    @apply bg-primary text-primary-foreground rounded-full;
+  }
+
+  .eligible-day {
+    @apply bg-green-500 text-white rounded-full;
+  }
+
+  /* Pulse animation for urgent */
+  .pulse-urgent {
+    animation: pulse-urgent 2s infinite;
+  }
+
+  @keyframes pulse-urgent {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  /* Loading skeleton */
+  .skeleton {
+    @apply animate-pulse bg-muted rounded;
+  }
+}
+
+@layer utilities {
+  /* Custom scrollbar */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted)) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-muted rounded-full;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/30;
+  }
+}
