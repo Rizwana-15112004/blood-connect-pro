@@ -124,4 +124,4 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # CORS and CSRF Settings
 CORS_ALLOW_ALL_ORIGINS = True
-CSRF_TRUSTED_ORIGINS = ['http://localhost:8080', 'http://127.0.0.1:8080']
+CSRF_TRUSTED_ORIGINS = ['http://localhost:8080', 'http://127.0.0.1:8080', 'https://blood-connect-pro.netlify.app']
