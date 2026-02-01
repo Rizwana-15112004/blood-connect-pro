@@ -58,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const data = await api.login(email, password);
+      const data = await api.login(email.trim(), password);
       setUser(data.user);
       return { error: null };
     } catch (error: any) {

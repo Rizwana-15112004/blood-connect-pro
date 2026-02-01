@@ -244,9 +244,11 @@ class LoginView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
-            username = data.get('email') # Using email as username
+            username = data.get('email', '').strip()
             password = data.get('password')
+            print(f"LOGIN ATTEMPT: username=[{username}]")
             user = authenticate(username=username, password=password)
+            print(f"AUTHENTICATE RESULT: {user}")
             if user is not None:
                 login(request, user)
                 # Fetch profile data
