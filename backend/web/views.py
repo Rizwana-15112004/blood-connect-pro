@@ -8,6 +8,8 @@ from django.views.decorators.http import require_POST, require_GET
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView
 from django.views import View
+from django.core.mail import send_mail
+from django.conf import settings
 from .models import BloodRequest, Donation, Inventory
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -140,8 +142,46 @@ class AllocateDonorView(View):
                 blood_request.status = status.upper()
             
             if donor_id:
-                blood_request.assigned_donor_id = donor_id 
-            
+                blood_request.assigned_donor_id = donor_id
+                
+                # Fetch donor email (assuming User model or Donor Profile)
+                # Since assigned_donor_id is just an ID string in current model, we need to find the user.
+                # Assuming donor_id maps to User.id
+                try:
+                    donor_user = User.objects.get(id=donor_id)
+                    donor_email = donor_user.email
+                    
+                    # Send Email (Real)
+                    subject = f"Urgent Blood Request Allocation: {blood_request.blood_group}"
+                    message = f"""
+                    Dear {donor_user.username},
+                    
+                    You have been identified as a matching donor for an urgent blood request.
+                    
+                    Patient: {blood_request.patient_name}
+                    Blood Group: {blood_request.blood_group}
+                    Hospital: {blood_request.hospital}
+                    Location: {blood_request.city}
+                    Contact: {blood_request.contact_number}
+                    
+                    Please contact the requester immediately if you are available to donate.
+                    
+                    Thank you,
+                    BloodLife Team
+                    """
+                    
+                    send_mail(
+                        subject,
+                        message,
+                        settings.DEFAULT_FROM_EMAIL if hasattr(settings, 'DEFAULT_FROM_EMAIL') else 'noreply@bloodlife.com',
+                        [donor_email],
+                        fail_silently=False,
+                    )
+                except User.DoesNotExist:
+                    print(f"Donor with ID {donor_id} not found in User DB, skipping email.")
+                except Exception as e:
+                    print(f"Failed to send email: {e}")
+
             blood_request.save()
             
             return JsonResponse({'success': True})
