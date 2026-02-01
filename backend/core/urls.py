@@ -5,31 +5,21 @@ from web.views import ReactAppView, LoginView, RegisterView, LogoutView, UserVie
 urlpatterns = [
     path('admin/', admin.site.urls),
     # Auth
-    path('api/login', LoginView.as_view()),
     path('api/login/', LoginView.as_view()),
-    path('api/register', RegisterView.as_view()),
     path('api/register/', RegisterView.as_view()),
-    path('api/logout', LogoutView.as_view()),
     path('api/logout/', LogoutView.as_view()),
-    path('api/user', UserView.as_view()),
     path('api/user/', UserView.as_view()),
-    path('api/csrf', GetCSRFToken.as_view()),
     path('api/csrf/', GetCSRFToken.as_view()),
-    path('api/update-eligibility', UpdateEligibilityView.as_view()),
     path('api/update-eligibility/', UpdateEligibilityView.as_view()),
 
     # Blood Requests
-    path('api/request-blood', RequestBloodView.as_view()),
+    # Blood Requests
     path('api/request-blood/', RequestBloodView.as_view()),
-    path('api/all-requests', GetRequestsView.as_view()),
     path('api/all-requests/', GetRequestsView.as_view()),
-    path('api/allocate-donor', AllocateDonorView.as_view()),
     path('api/allocate-donor/', AllocateDonorView.as_view()),
 
     # Donations
-    path('api/donate', LogDonationView.as_view()),
     path('api/donate/', LogDonationView.as_view()),
-    path('api/my-donations', DonorHistoryView.as_view()),
     path('api/my-donations/', DonorHistoryView.as_view()),
 
     # Admin
