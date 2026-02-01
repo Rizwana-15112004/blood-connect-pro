@@ -208,6 +208,8 @@ export default function Dashboard() {
   const fetchPersonalStats = async () => {
     try {
       const myDonations = await api.getMyDonations(user ? String(user.id) : '');
+      const profile = user ? await api.getProfile(user.email) : null;
+
       // Filter for verified/completed donations to match Profile logic
       const verifiedDonations = myDonations.filter((d: any) => d.is_verified);
 
@@ -220,19 +222,19 @@ export default function Dashboard() {
         nextDate.setDate(nextDate.getDate() + 56);
       }
 
-      // We can get eligibility from the profile endpoint or re-calculate.
-      // For consistency, let's assume if there's no last donation, or it's been > 56 days, they might be eligible.
-      // However, Profile.tsx does a full check. Dashboard just shows a summary.
-      // Ideally we should fetch the full profile to get health overrides, but querying donations is the source of truth for "Total Donations".
+      // Determine Eligibility:
+      // 1. Must satisfy donation interval (calculated here)
+      // 2. Must satisfy profile health checks (from api.getProfile)
 
-      // Let's also fetch profile for other flags if needed, but primary stats come from donations list.
-      // const profile = await api.getProfile(); // if available
+      const isDateEligible = !lastDate || (new Date() > nextDate!);
+      // If profile exists, use its eligible flag combined with date check
+      const isProfileEligible = profile ? profile.is_eligible : true;
 
       setPersonalStats({
         totalDonations: verifiedDonations.length,
         lastDonation: lastDonation ? lastDonation.donation_date : null,
         nextEligible: nextDate ? nextDate.toISOString() : new Date().toISOString(),
-        isEligible: !lastDate || (new Date() > nextDate!) // Simple date check for dashboard display
+        isEligible: isDateEligible && isProfileEligible
       });
     } catch (e) {
       console.error("Failed to fetch personal stats", e);
@@ -294,8 +296,12 @@ export default function Dashboard() {
           />
           <StatCard
             title="Blood Status"
-            value={hasCheckedEligibility ? (personalStats.isEligible ? 'Eligible' : 'Waiting Period') : 'Check Eligibility'}
-            subtitle={hasCheckedEligibility ? 'Based on WHO criteria' : 'Check eligibility to proceed'}
+            value={hasCheckedEligibility ? (personalStats.isEligible ? 'Eligible' : 'Not Eligible') : 'Check Eligibility'}
+            // subtitle={hasCheckedEligibility ? 'Based on WHO criteria' : 'Check eligibility to proceed'}
+            subtitle={hasCheckedEligibility
+              ? (personalStats.isEligible ? 'You are clear to donate' : 'Based on health/date criteria')
+              : 'Complete health checkup first'
+            }
             icon={<Droplets className="h-6 w-6 text-purple-500" />}
             variant={hasCheckedEligibility ? (personalStats.isEligible ? 'success' : 'warning') : 'warning'}
             description={
@@ -324,19 +330,20 @@ export default function Dashboard() {
           />
         </div>
 
-        {/* Charts Row */}
-        <div className="grid gap-6 lg:grid-cols-2">
-          <BloodGroupDonutChart
-            data={bloodGroupChartData}
-            title="Blood Group Distribution"
-            subtitle="Current inventory by blood type"
-          />
-          {/* Removed NewDonorsDonutChart for Donor View */}
-          <div className="hidden lg:block"></div> {/* Spacer or just allow it to take full width if we adjust grid cols, but keeping grid-cols-2 for layout consistency or remove this div */}
-        </div>
+        {/* Charts Row - Admin Only */}
+        {isAdmin && (
+          <div className="grid gap-6 lg:grid-cols-2">
+            <BloodGroupDonutChart
+              data={bloodGroupChartData}
+              title="Blood Group Distribution"
+              subtitle="Current inventory by blood type"
+            />
+            <div className="hidden lg:block"></div>
+          </div>
+        )}
 
         {/* 6-Month Chart */}
-        <div className="grid gap-6 lg:grid-cols-1"> {/* Changed to 1 col since we removed RecentDonorsList */}
+        <div className="grid gap-6 lg:grid-cols-1">
           <div className="">
             <SixMonthDonationChart data={monthlyDonations} />
           </div>

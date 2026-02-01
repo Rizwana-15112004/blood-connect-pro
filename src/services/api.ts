@@ -177,5 +177,13 @@ export const api = {
         });
     },
 
+    getProfile: async (email: string) => {
+        if (isMockMode) return mockService.getUserProfile(email);
+        // For real backend, we might use a specific profile endpoint or just rely on user data
+        // Assuming /api/user/ gives profile data, or we add a specific one.
+        // For now, let's assume /api/profile/ exists or we use checkAuth logic
+        return fetchWithCSRF(`/api/profile/?email=${email}`);
+    },
+
     isMockMode
 };

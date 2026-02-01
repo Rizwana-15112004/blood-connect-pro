@@ -95,18 +95,20 @@ export function generate6MonthData(donations: any[] = []): MonthlyDonation[] {
 
   for (let i = 5; i >= 0; i--) {
     const date = subMonths(new Date(), i);
-    const monthKey = format(date, 'MMM yyyy'); // matches dashboard logging if needed, or just compare month/year
+    const targetMonth = date.getMonth();
+    const targetYear = date.getFullYear();
+    const monthLabel = format(date, 'MMM');
 
     // Filter donations for this specific month and year
     const monthlyTotal = donations
       .filter(d => {
         const dDate = new Date(d.donation_date);
-        return format(dDate, 'MMM yyyy') === monthKey;
+        return dDate.getMonth() === targetMonth && dDate.getFullYear() === targetYear;
       })
       .reduce((sum, d) => sum + (Number(d.units_donated) || 0), 0);
 
     months.push({
-      month: format(date, 'MMM'),
+      month: monthLabel,
       units: monthlyTotal,
     });
   }
