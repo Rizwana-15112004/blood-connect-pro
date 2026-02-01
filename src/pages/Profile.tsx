@@ -29,26 +29,31 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 
+import { DonationCertificate } from '@/components/donor/DonationCertificate';
+
 function DonationLogDialog({ onDonationSuccess, userBloodGroup }: { onDonationSuccess: () => void, userBloodGroup: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [units, setUnits] = useState('1');
   const [center, setCenter] = useState('');
   const [loading, setLoading] = useState(false);
+  const [lastRecordedDonation, setLastRecordedDonation] = useState<any>(null);
   const { toast } = useToast();
 
   const handleSubmit = async () => {
     setLoading(true);
     try {
+      // Use useAuth to get user id if needed, but mockService handles it via userId arg
       const data = await api.logDonation({ units, center, bloodGroup: userBloodGroup });
 
-      if (data.success || data.id) {
+      if (data.success && data.donation) {
+        setLastRecordedDonation(data.donation);
         toast({
           title: "Donation Logged!",
           description: "Thank you for your donation. Your records have been updated.",
           className: "bg-green-600 text-white border-none"
         });
         onDonationSuccess();
-        setIsOpen(false);
+        // Don't close immediately, keep certificate open
       } else {
         throw new Error("Failed to log donation");
       }
@@ -65,38 +70,51 @@ function DonationLogDialog({ onDonationSuccess, userBloodGroup }: { onDonationSu
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button className="gap-2 bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-200">
-          <Plus className="h-4 w-4" />
-          I Donated Today
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Log Your Donation</DialogTitle>
-          <DialogDescription>
-            Thank you for saving lives! Please enter the details below.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="units">Units Donated</Label>
-            <Input id="units" type="number" step="0.5" value={units} onChange={e => setUnits(e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="center">Donation Center</Label>
-            <Input id="center" placeholder="e.g. City Hospital" value={center} onChange={e => setCenter(e.target.value)} />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
-          <Button onClick={handleSubmit} disabled={loading}>
-            {loading ? 'Saving...' : 'Confirm Donation'}
+    <>
+      <Dialog open={isOpen} onOpenChange={(v) => {
+        setIsOpen(v);
+        if (!v) setLastRecordedDonation(null);
+      }}>
+        <DialogTrigger asChild>
+          <Button className="gap-2 bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-200">
+            <Plus className="h-4 w-4" />
+            I Donated Today
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </DialogTrigger>
+        <DialogContent className={lastRecordedDonation ? "max-w-[850px] p-0 border-none bg-transparent" : ""}>
+          {!lastRecordedDonation ? (
+            <>
+              <DialogHeader>
+                <DialogTitle>Log Your Donation</DialogTitle>
+                <DialogDescription>
+                  Thank you for saving lives! Please enter the details below.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="units">Units Donated</Label>
+                  <Input id="units" type="number" step="0.5" value={units} onChange={e => setUnits(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="center">Donation Center</Label>
+                  <Input id="center" placeholder="e.g. City Hospital" value={center} onChange={e => setCenter(e.target.value)} />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
+                <Button onClick={handleSubmit} disabled={loading}>
+                  {loading ? 'Saving...' : 'Confirm Donation'}
+                </Button>
+              </DialogFooter>
+            </>
+          ) : (
+            <div className="flex justify-center p-4">
+              <DonationCertificate donation={lastRecordedDonation} />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

@@ -71,7 +71,7 @@ export const api = {
     },
 
     logout: async () => {
-        if (isMockMode) return { success: true };
+        if (isMockMode) return mockService.logout();
         try {
             await fetchWithCSRF('/api/logout/', { method: 'POST' });
             return { success: true };
@@ -80,10 +80,7 @@ export const api = {
 
     checkAuth: async () => {
         if (isMockMode) {
-            // In mock mode, we don't persist session in this simplified version unless we use localStorage.
-            // But for now, returning null (logged out) on refresh is acceptable for a "Preview".
-            // Or verify with "admin" if we want to fake persistence.
-            return null;
+            return mockService.checkAuth();
         }
         return fetchWithCSRF('/api/user/').catch(() => null);
     },

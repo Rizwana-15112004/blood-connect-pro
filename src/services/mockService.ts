@@ -138,39 +138,62 @@ const MOCK_REQUESTS: BloodRequest[] = [
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // In-Memory Storage
-let inventoryStore = [...MOCK_INVENTORY];
-let donorsStore = [...MOCK_DONORS];
-let donationsStore = [...MOCK_DONATIONS];
-let requestsStore = [...MOCK_REQUESTS];
-let notificationsStore: any[] = []; // Store for notifications
+const SESSION_KEY = 'blood_connect_pro_session';
+const DATA_KEY = 'blood_connect_pro_data';
+
+// Hydrate state from localStorage if exists
+const savedData = localStorage.getItem(DATA_KEY);
+let inventoryStore = savedData ? JSON.parse(savedData).inventory : [...MOCK_INVENTORY];
+let donorsStore = savedData ? JSON.parse(savedData).donors : [...MOCK_DONORS];
+let donationsStore = savedData ? JSON.parse(savedData).donations : [...MOCK_DONATIONS];
+let requestsStore = savedData ? JSON.parse(savedData).requests : [...MOCK_REQUESTS];
+let notificationsStore = savedData ? JSON.parse(savedData).notifications : [];
+
+const saveToLocalStorage = () => {
+    localStorage.setItem(DATA_KEY, JSON.stringify({
+        inventory: inventoryStore,
+        donors: donorsStore,
+        donations: donationsStore,
+        requests: requestsStore,
+        notifications: notificationsStore
+    }));
+};
 
 export const mockService = {
-
     // --- AUTH ---
 
     dbInit: () => {
-        // Ensure admin always exists in memory
-        console.log("Mock DB Initialized");
+        console.log("Mock DB Initialized with Persistence");
+    },
+
+    checkAuth: async () => {
+        await delay(300);
+        const session = localStorage.getItem(SESSION_KEY);
+        if (session) {
+            const userData = JSON.parse(session);
+            // Verify user still exists
+            const user = donorsStore.find(d => d.id === userData.id || d.email === userData.email);
+            if (user || userData.role === 'admin') return userData;
+        }
+        return null;
     },
 
     login: async (email: string, password: string) => {
         await delay(500);
-        if (email === 'admin@bloodlife.com' && password === 'admin') {
-            return {
-                user: {
-                    id: 'admin',
-                    email: email,
-                    role: 'admin',
-                    isEligible: true,
-                    bloodGroup: 'O-',
-                }
-            };
-        }
+        let userSession: any = null;
 
-        const donor = donorsStore.find(d => d.email === email);
-        if (donor) {
-            return {
-                user: {
+        if (email === 'admin@bloodlife.com' && password === 'admin') {
+            userSession = {
+                id: 'admin',
+                email: email,
+                role: 'admin',
+                isEligible: true,
+                bloodGroup: 'O-',
+            };
+        } else {
+            const donor = donorsStore.find(d => d.email === email);
+            if (donor) {
+                userSession = {
                     id: donor.id,
                     email: donor.email,
                     role: 'donor',
@@ -178,11 +201,21 @@ export const mockService = {
                     bloodGroup: donor.blood_group,
                     phone: donor.phone,
                     city: donor.city
-                }
-            };
+                };
+            }
+        }
+
+        if (userSession) {
+            localStorage.setItem(SESSION_KEY, JSON.stringify(userSession));
+            return { user: userSession };
         }
 
         throw new Error("Invalid credentials (try admin@bloodlife.com / admin)");
+    },
+
+    logout: async () => {
+        localStorage.removeItem(SESSION_KEY);
+        return { success: true };
     },
 
     register: async (email: string, password: string, isEligible: boolean) => {
@@ -197,10 +230,10 @@ export const mockService = {
             email: email,
             role: 'donor',
             phone: '',
-            date_of_birth: '',
+            date_of_birth: '2000-01-01',
             gender: 'other',
-            blood_group: 'Unknown',
-            weight: 0,
+            blood_group: 'O+',
+            weight: 70,
             is_eligible: isEligible,
             total_donations: 0,
             last_donation_date: null,
@@ -208,15 +241,18 @@ export const mockService = {
             city: ''
         };
         donorsStore.push(newDonor);
+        saveToLocalStorage();
 
-        return {
-            user: {
-                id: newDonor.id,
-                email: newDonor.email,
-                role: 'donor',
-                isEligible: isEligible
-            }
+        const userSession = {
+            id: newDonor.id,
+            email: newDonor.email,
+            role: 'donor',
+            isEligible: isEligible,
+            bloodGroup: newDonor.blood_group
         };
+        localStorage.setItem(SESSION_KEY, JSON.stringify(userSession));
+
+        return { user: userSession };
     },
 
     getUserProfile: async (email: string) => {
@@ -263,6 +299,7 @@ export const mockService = {
             created_at: new Date().toISOString()
         };
         requestsStore.unshift(newReq);
+        saveToLocalStorage();
         return newReq;
     },
 
@@ -272,6 +309,7 @@ export const mockService = {
         if (req) {
             req.status = status as any;
             if (donorId) req.assigned_donor_id = donorId;
+            saveToLocalStorage();
         }
         return { success: true };
     },
@@ -324,6 +362,7 @@ export const mockService = {
                     type: 'system'
                 });
             }
+            saveToLocalStorage();
         }
         return { success: true };
     },
@@ -343,7 +382,7 @@ export const mockService = {
 
     logDonation: async (data: any, userId: string) => {
         await delay(500);
-        const user = donorsStore.find(d => d.id === userId.toString()); // Try to find user
+        const donor = donorsStore.find(d => d.id === userId.toString()); // Try to find user
         const newDonation: Donation = {
             id: Math.random().toString(36).substr(2, 9),
             donor_id: userId,
@@ -352,10 +391,19 @@ export const mockService = {
             blood_group: data.bloodGroup || 'O+',
             donation_center: data.center,
             collected_by: 'Staff',
-            is_verified: false
+            is_verified: true, // Self-logged is verified for demo
+            donors: { full_name: donor?.full_name || 'Donor' }
         };
         donationsStore.unshift(newDonation);
-        return { success: true, id: newDonation.id };
+
+        // Update donor stats
+        if (donor) {
+            donor.total_donations += 1;
+            donor.last_donation_date = newDonation.donation_date;
+        }
+
+        saveToLocalStorage();
+        return { success: true, id: newDonation.id, donation: newDonation };
     },
 
     getMyDonations: async (userId: string) => {
@@ -378,6 +426,7 @@ export const mockService = {
             if (data.phone) donor.phone = data.phone;
             if (data.city) donor.city = data.city;
             if (data.bloodGroup) donor.blood_group = data.bloodGroup;
+            saveToLocalStorage();
             return { success: true, isEligible: donor.is_eligible };
         }
         // Fallback for admin updates
@@ -495,6 +544,7 @@ Please contact them immediately.`;
             donor.last_donation_date = newDonation.donation_date;
         }
 
+        saveToLocalStorage();
         return { success: true, donation: newDonation };
     },
 
@@ -545,6 +595,7 @@ Please contact them immediately.`;
             registered_at: new Date().toISOString()
         };
         donorsStore.unshift(newDonor);
+        saveToLocalStorage();
         return newDonor;
     }
 };
