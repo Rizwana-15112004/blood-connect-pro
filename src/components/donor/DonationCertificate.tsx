@@ -22,7 +22,10 @@ export const DonationCertificate: React.FC<CertificateProps> = ({ donation }) =>
     const certificateRef = useRef<HTMLDivElement>(null);
 
     const donorName = donation.donors?.full_name || donation.donor_name || 'Valued Donor';
-    const donationDate = format(new Date(donation.donation_date), 'MMMM do, yyyy');
+    const donationDate = (() => {
+        const d = new Date(donation.donation_date);
+        return isNaN(d.getTime()) ? 'Recently' : format(d, 'MMMM do, yyyy');
+    })();
 
     const downloadPDF = async () => {
         if (!certificateRef.current) return;

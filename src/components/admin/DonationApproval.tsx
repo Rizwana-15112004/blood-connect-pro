@@ -4,15 +4,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { mockService } from '@/services/mockService';
+import { api } from '@/services/api';
 
 interface PendingDonation {
-    id: string; // Updated to string to match mockService
-    donor_name: string;
-    units: number; // Updated to number
+    id: string;
+    donors: { full_name: string };
+    units_donated: number;
     blood_group: string;
-    center: string;
-    date: string;
+    donation_center: string;
+    donation_date: string;
 }
 
 export function DonationApproval() {
@@ -26,9 +26,8 @@ export function DonationApproval() {
 
     const fetchPendingDonations = async () => {
         try {
-            const data = await mockService.getUnverifiedDonations();
-            // Map mock service data to component state if helpful, but they match well enough now
-            setDonations(data);
+            const data = await api.getUnverifiedDonations();
+            setDonations(data || []);
         } catch (error) {
             console.error('Error fetching pending donations:', error);
         } finally {
@@ -38,7 +37,7 @@ export function DonationApproval() {
 
     const handleAction = async (donationId: string, action: 'approve' | 'reject') => {
         try {
-            const res = await mockService.verifyDonation(donationId, action);
+            const res = await api.verifyDonation(donationId, action);
 
             if (res.success) {
                 toast({
@@ -50,10 +49,10 @@ export function DonationApproval() {
             } else {
                 throw new Error("Action failed");
             }
-        } catch (error) {
+        } catch (error: any) {
             toast({
                 title: "Error",
-                description: "Failed to process request. Please try again.",
+                description: error.message || "Failed to process request. Please try again.",
                 variant: "destructive"
             });
         }
@@ -91,15 +90,18 @@ export function DonationApproval() {
                     >
                         <div className="flex-1">
                             <div className="flex items-center gap-2">
-                                <span className="font-bold text-lg">{donation.donor_name}</span>
+                                <span className="font-bold text-lg">{donation.donors?.full_name || 'Donor'}</span>
                                 <span className="text-sm bg-primary/10 text-primary px-2 py-0.5 rounded text-xs font-bold">
                                     {donation.blood_group}
                                 </span>
                             </div>
                             <div className="text-sm text-muted-foreground mt-1 flex flex-wrap gap-4">
-                                <span>Units: <strong className="text-foreground">{donation.units}</strong></span>
-                                <span>Center: {donation.center}</span>
-                                <span>{format(new Date(donation.date), "MMM d, yyyy")}</span>
+                                <span>Units: <strong className="text-foreground">{donation.units_donated}</strong></span>
+                                <span>Center: {donation.donation_center}</span>
+                                <span>{(() => {
+                                    const d = new Date(donation.donation_date);
+                                    return isNaN(d.getTime()) ? 'Recently' : format(d, "MMM d, yyyy");
+                                })()}</span>
                             </div>
                         </div>
 

@@ -248,7 +248,10 @@ export default function Dashboard() {
           <StatCard
             title="Last Donation"
             value={personalStats.lastDonation
-              ? format(new Date(personalStats.lastDonation), 'MMM d, yyyy')
+              ? (() => {
+                const d = new Date(personalStats.lastDonation);
+                return isNaN(d.getTime()) ? 'Invalid Date' : format(d, 'MMM d, yyyy');
+              })()
               : 'None yet'}
             subtitle="Thank you!"
             icon={<CalendarIcon className="h-6 w-6 text-blue-500" />}
@@ -256,7 +259,10 @@ export default function Dashboard() {
           <StatCard
             title="Next Eligibility"
             value={(personalStats.nextEligible && new Date(personalStats.nextEligible) > new Date())
-              ? format(new Date(personalStats.nextEligible), 'MMM d, yyyy')
+              ? (() => {
+                const d = new Date(personalStats.nextEligible);
+                return isNaN(d.getTime()) ? 'Available Now' : format(d, 'MMM d, yyyy');
+              })()
               : 'Available Now'}
             subtitle={personalStats.isEligible ? 'You can donate!' : 'Wait for safety'}
             icon={<Activity className="h-6 w-6 text-emerald-500" />}

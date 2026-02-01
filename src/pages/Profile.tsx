@@ -377,7 +377,10 @@ export default function Profile() {
           <StatCard
             title="Last Donation"
             value={profile.last_donation_date
-              ? format(new Date(profile.last_donation_date), 'MMM d, yyyy')
+              ? (() => {
+                const d = new Date(profile.last_donation_date);
+                return isNaN(d.getTime()) ? 'Invalid Date' : format(d, 'MMM d, yyyy');
+              })()
               : 'Never'
             }
             subtitle="Most recent donation"
@@ -385,7 +388,10 @@ export default function Profile() {
           />
           <StatCard
             title="Member Since"
-            value={format(new Date(profile.registered_at), 'MMM yyyy')}
+            value={(() => {
+              const d = new Date(profile.registered_at);
+              return isNaN(d.getTime()) ? 'Recently' : format(d, 'MMM yyyy');
+            })()}
             subtitle="Registration date"
             icon={<User className="h-6 w-6" />}
           />

@@ -205,7 +205,12 @@ export function BloodRequestSection({ userId }: { userId: number | string }) {
                                                 {req.status.charAt(0).toUpperCase() + req.status.slice(1)}
                                             </Badge>
                                         </CardTitle>
-                                        <p className="text-sm text-muted-foreground mt-1">{format(new Date(req.request_date), 'MMM d, yyyy')}</p>
+                                        <p className="text-sm text-muted-foreground mt-1">
+                                            {(() => {
+                                                const d = new Date(req.created_at);
+                                                return isNaN(d.getTime()) ? 'Recently' : format(d, 'MMM d, yyyy');
+                                            })()}
+                                        </p>
                                     </div>
                                     <div className="h-10 w-10 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center text-red-600 font-bold border border-red-200 dark:border-red-800">
                                         {req.blood_group}
@@ -261,6 +266,6 @@ export function BloodRequestSection({ userId }: { userId: number | string }) {
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 }

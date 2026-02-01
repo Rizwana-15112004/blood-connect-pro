@@ -302,7 +302,10 @@ export default function Donors() {
                     </TableCell>
                     <TableCell>
                       {donor.last_donation_date ? (
-                        format(new Date(donor.last_donation_date), 'MMM d, yyyy')
+                        (() => {
+                          const d = new Date(donor.last_donation_date);
+                          return isNaN(d.getTime()) ? 'Invalid Date' : format(d, 'MMM d, yyyy');
+                        })()
                       ) : (
                         <span className="text-muted-foreground">Never</span>
                       )}
@@ -319,7 +322,10 @@ export default function Donors() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {format(new Date(donor.registered_at), 'MMM d, yyyy')}
+                      {(() => {
+                        const d = new Date(donor.registered_at);
+                        return isNaN(d.getTime()) ? 'Recently' : format(d, 'MMM d, yyyy');
+                      })()}
                     </TableCell>
                   </motion.tr>
                 ))

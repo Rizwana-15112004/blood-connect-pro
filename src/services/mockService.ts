@@ -320,11 +320,11 @@ export const mockService = {
         await delay(300);
         return donationsStore.filter(d => !d.is_verified).map(d => ({
             id: d.id,
-            donor_name: donorsStore.find(u => u.id === d.donor_id)?.full_name || 'Unknown',
-            units: d.units_donated,
+            donors: { full_name: donorsStore.find(u => u.id === d.donor_id)?.full_name || 'Unknown' },
+            units_donated: d.units_donated,
             blood_group: d.blood_group,
-            center: d.donation_center,
-            date: d.donation_date
+            donation_center: d.donation_center,
+            donation_date: d.donation_date
         }));
     },
 

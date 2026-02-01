@@ -135,7 +135,10 @@ export default function CalendarPage() {
                   <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <CardTitle className="text-sm font-medium">
-                        {format(new Date(donation.date), 'MMMM d, yyyy')}
+                        {(() => {
+                          const d = new Date(donation.date);
+                          return isNaN(d.getTime()) ? 'Soon' : format(d, 'MMMM d, yyyy');
+                        })()}
                       </CardTitle>
                       <Badge>{donation.bloodGroup}</Badge>
                     </CardHeader>
