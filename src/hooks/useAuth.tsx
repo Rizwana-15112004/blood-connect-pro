@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { mockService } from '@/lib/mockData';
 
 type AppRole = 'admin' | 'donor';
 
@@ -93,16 +92,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
       }
     } catch (error) {
-      console.warn("Auth check failed (Demo Mode Active)", error);
-      // Demo persistence
-      try {
-        const demoUser = localStorage.getItem('demo_user');
-        if (demoUser) {
-          setUser(JSON.parse(demoUser));
-        } else {
-          setUser(null);
-        }
-      } catch (e) { setUser(null); }
+      console.warn("Auth check failed", error);
+      setUser(null);
     } finally {
       setLoading(false);
     }
@@ -120,35 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(data.user);
       return { error: null };
     } catch (error: any) {
-      console.warn("Using Mock SignUp");
-
-      // Check if user already exists
-      const existing = await mockService.verifyCredentials(email);
-      if (existing) {
-        return { error: new Error("User already exists. Please Sign In.") };
-      }
-
-      // Register new user in mock DB. Pass minimal required fields.
-      // addDonor expects: full_name, email, phone, date_of_birth, gender, blood_group, weight, is_eligible
-      await mockService.addDonor({
-        full_name: email.split('@')[0],
-        email: email,
-        phone: '',
-        date_of_birth: '', // Profile will prompt for this
-        gender: 'other',
-        blood_group: 'Unknown',
-        weight: 0,
-        is_eligible: isEligible
-      });
-
-      const mockUser: User = {
-        id: Math.floor(Math.random() * 10000),
-        email: email,
-        role: 'donor'
-      };
-      setUser(mockUser);
-      localStorage.setItem('demo_user', JSON.stringify(mockUser));
-      return { error: null };
+      return { error: error };
     }
   };
 
@@ -171,29 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(data.user);
       return { error: null };
     } catch (error: any) {
-      console.warn("Using Mock SignIn");
-
-      // Verify against mock DB
-      const verifiedUser = await mockService.verifyCredentials(email);
-
-      if (verifiedUser) {
-        // Admin password check
-        if (email === 'admin@example.com' && password !== 'admin') {
-          return { error: new Error('Invalid credentials') };
-        }
-
-        const appUser: User = {
-          id: Number(verifiedUser.id) || 999,
-          email: verifiedUser.email,
-          role: verifiedUser.role as AppRole
-        };
-        setUser(appUser);
-        localStorage.setItem('demo_user', JSON.stringify(appUser));
-        return { error: null };
-      }
-
-      // No fallback allowed!
-      return { error: new Error('User not found. Please Sign Up.') };
+      return { error: new Error(error.message || 'Login failed') };
     }
   };
 
@@ -203,7 +144,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (e) { }
 
     setUser(null);
-    localStorage.removeItem('demo_user');
+    localStorage.removeItem('demo_user'); // Clean up just in case
     window.location.href = '/';
   };
 

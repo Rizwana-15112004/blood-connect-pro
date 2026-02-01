@@ -9,9 +9,10 @@ import { SixMonthDonationChart, generate6MonthData } from '@/components/dashboar
 import { EligibilityCard } from '@/components/donor/EligibilityCard';
 import { BloodGroupBadge } from '@/components/donor/BloodGroupBadge';
 import { CertificateCard } from '@/components/donor/CertificateCard';
-import { mockService, Donor } from '@/lib/mockData';
 // import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+
+import { Donor } from '@/types';
 import { checkEligibility, DonorHealthData, getBloodGroupCompatibility } from '@/lib/eligibility';
 import { format, subMonths } from 'date-fns';
 import {
@@ -76,32 +77,11 @@ function DonationLogDialog({ onDonationSuccess, userBloodGroup }: { onDonationSu
       }
     } catch (error: any) {
       console.error("Donation Log Error:", error);
-
-      // Fallback to Mock
-      try {
-        await mockService.addDonation({
-          donor_id: 'guest', // or fetch from props if available, we'll fix simple case
-          units_donated: Number(units),
-          blood_group: userBloodGroup,
-          donation_center: center,
-          collected_by: 'Self (Demo)',
-          donation_date: new Date().toISOString()
-        } as any);
-
-        toast({
-          title: "Donation Logged (Demo Mode)",
-          description: "Thank you! This is a demo submission.",
-          className: "bg-blue-600 text-white border-none"
-        });
-        onDonationSuccess();
-        setIsOpen(false);
-      } catch (mockError) {
-        toast({
-          title: "Submission Failed",
-          description: error.message || "Could not log donation. Please try again.",
-          variant: "destructive"
-        });
-      }
+      toast({
+        title: "Submission Failed",
+        description: error.message || "Could not log donation. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
@@ -174,46 +154,43 @@ export default function Profile() {
       // Requirement: Certificate only if approved.
       const verifiedDonations = realDonations.filter((d: any) => d.is_verified);
 
-      // 2. Fetch Profile Details (Try Mock first, then Fallback)
-      // Since we don't have a real Donor Profile API yet, we stick to Mock for "Base" info
-      // But we OVERRIDE the stats with real data.
-      let profileData = await mockService.getProfile(user?.email);
-
-      if (!profileData && user) {
-        // Fallback profile if not in mock data (e.g. new sign up)
-        profileData = {
-          id: user.id,
-          full_name: user.email.split('@')[0], // Fallback name
+      // 2. Map Profile Data from Real User
+      // The user object from useAuth (populated by /api/user/) has the profile fields now.
+      // We map it to the 'Donor' interface used by the UI.
+      if (user) {
+        // Fallback or defaults for missing fields in the simplified User model
+        const profileData = {
+          id: user.id.toString(),
+          full_name: user.email.split('@')[0],
           email: user.email,
-          phone: '',
-          state: '',
-          city: '',
-          blood_group: verifiedDonations.length > 0 ? verifiedDonations[0].blood_group : 'Unknown', // Infer or Unknown
-          last_donation_date: '',
-          total_donations: 0,
+          phone: (user as any).phone || '',
+          state: '', // Not in DB yet
+          city: (user as any).city || '',
+          blood_group: (user as any).bloodGroup || (verifiedDonations.length > 0 ? verifiedDonations[0].blood_group : 'Unknown'),
+          last_donation_date: (user as any).last_donation_date || '', // Might come from DB or infer from donations
+          total_donations: verifiedDonations.length,
           is_available: true,
-          has_chronic_disease: false,
+          has_chronic_disease: false, // Default since we don't store these in simplified profile yet
           is_on_medication: false,
           is_pregnant: false,
-          registered_at: new Date().toISOString(),
-          date_of_birth: '',
+          registered_at: new Date().toISOString(), // Approximation
+          date_of_birth: new Date().toISOString(), // Placeholder if missing
           gender: 'other',
-          weight: 0
-        };
-      }
-
-      if (profileData) {
-        // Use Real Stats
-        const latestDonation = verifiedDonations.length > 0 ? verifiedDonations[0] : null; // Sorted by date desc in backend
-
-        const updatedProfile = {
-          ...profileData,
-          total_donations: verifiedDonations.length, // Count verified only?
-          last_donation_date: latestDonation ? latestDonation.donation_date : null,
-          // blood_group: latestDonation ? latestDonation.blood_group : profileData.blood_group // Maybe update blood group if known?
+          weight: 0,
+          hemoglobin_level: 0,
+          blood_pressure_systolic: 0,
+          blood_pressure_diastolic: 0
         };
 
-        setProfile(updatedProfile);
+        // Use Real Stats Overrides
+        const latestDonation = verifiedDonations.length > 0 ? verifiedDonations[0] : null;
+
+        // Update last donation from actual logs if available
+        if (latestDonation) {
+          profileData.last_donation_date = latestDonation.donation_date;
+        }
+
+        setProfile(profileData as any);
 
         // Chart Data
         const monthlyData: Record<string, number> = {};

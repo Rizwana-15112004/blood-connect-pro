@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { Award, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Donor } from '@/lib/mockData';
+import { Donor } from '@/types';
 import { jsPDF } from 'jspdf';
 
 interface CertificateCardProps {

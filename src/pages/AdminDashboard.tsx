@@ -7,7 +7,7 @@ import { BloodGroupDonutChart } from '@/components/dashboard/BloodGroupDonutChar
 import { NewDonorsDonutChart } from '@/components/dashboard/NewDonorsDonutChart';
 import { RecentDonorsList } from '@/components/dashboard/RecentDonorsList';
 import { UrgentBloodAlert } from '@/components/dashboard/UrgentBloodAlert';
-import { mockService, InventoryItem } from '@/lib/mockData';
+import { InventoryItem } from '@/lib/mockData'; // Keeping InventoryItem type for now if needed, or better move to types. Triggering clean up.
 import { AdminRequestManager } from '@/components/dashboard/AdminRequestManager';
 import { DonationApproval } from '@/components/admin/DonationApproval';
 

@@ -15,7 +15,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, Activity, MapPin, Phone, User } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { mockService } from '@/lib/mockData';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function RequestBlood() {
@@ -99,48 +98,13 @@ export default function RequestBlood() {
                 additionalNotes: ''
             });
 
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-
-            // Fallback to Mock Data (Demo Mode)
-            console.log("API Failed, using Mock Service");
-            try {
-                await mockService.addRequest({
-                    requester_id: user?.id.toString() || 'guest',
-                    patient_name: formData.patientName,
-                    blood_group: formData.bloodGroup,
-                    hospital: formData.hospital, // Mapped to location in mock? mock uses 'location', frontend 'city'/'hospital'
-                    location: `${formData.hospital}, ${formData.city}`,
-                    units: 1, // Default
-                    reason: formData.additionalNotes || 'Urgent Request',
-                    contact_number: formData.contactNumber,
-                    urgency: formData.urgency
-                } as any); // Type casting since mock expects specific shape
-
-                toast({
-                    title: "Request Submitted (Demo Mode)",
-                    description: "Request saved locally. An admin will verify it shortly.",
-                    className: "bg-blue-600 text-white border-none"
-                });
-
-                // Reset form
-                setFormData({
-                    patientName: '',
-                    bloodGroup: '',
-                    hospital: '',
-                    city: '',
-                    contactNumber: '',
-                    urgency: '',
-                    additionalNotes: ''
-                });
-
-            } catch (mockError) {
-                toast({
-                    title: "Submission Failed",
-                    description: "Could not save request. Please try again later.",
-                    variant: "destructive"
-                });
-            }
+            toast({
+                title: "Submission Failed",
+                description: error.message || "Could not save request. Please try again later.",
+                variant: "destructive"
+            });
         } finally {
             setLoading(false);
         }
