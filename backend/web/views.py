@@ -2,13 +2,14 @@ import json
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.http import JsonResponse
-from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from django.views.decorators.http import require_POST, require_GET
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView
 from django.views import View
 from .models import BloodRequest, Donation, Inventory
 
+@method_decorator(csrf_exempt, name='dispatch')
 class LogDonationView(View):
     def post(self, request):
         try:
