@@ -70,7 +70,7 @@ export const DonationCertificate: React.FC<CertificateProps> = ({ donation }) =>
                         </div>
                     </div>
                     <div className="text-right font-sans">
-                        <p className="text-[10px] text-slate-500">ID: {donation.id}</p>
+                        {/* ID removed for professional design */}
                     </div>
                 </div>
 
