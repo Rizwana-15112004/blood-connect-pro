@@ -511,5 +511,89 @@ export const mockService = {
     getDonors: async () => {
         await delay(500);
         return donorsStore;
+    },
+
+    // --- MISSING METHODS ADDED FOR CONSISTENCY ---
+
+    getInventory: async () => {
+        await delay(300);
+        return inventoryStore;
+    },
+
+    getDashboardStats: async () => {
+        // Re-use getStats logic
+        return await mockService.getStats();
+    },
+
+    getProfile: async (email: string) => {
+        return await mockService.getUserProfile(email);
+    },
+
+    addDonation: async (data: any) => {
+        // Re-use logDonation logic but adapt args if needed
+        // Dashboard calls: addDonation({ donor_id, ... })
+        const user = donorsStore.find(d => d.id === data.donor_id);
+        const newDonation: Donation = {
+            id: Math.random().toString(36).substr(2, 9),
+            donor_id: data.donor_id,
+            donation_date: data.donation_date || new Date().toISOString(),
+            units_donated: data.units_donated || 1,
+            blood_group: data.blood_group || (user?.blood_group || 'O+'),
+            donation_center: data.donation_center || 'Main Center',
+            collected_by: data.collected_by || 'Staff',
+            is_verified: false
+        };
+        donationsStore.unshift(newDonation);
+        return { success: true };
+    },
+
+    getRecentDonors: async () => {
+        await delay(300);
+        return donorsStore
+            .sort((a, b) => new Date(b.registered_at).getTime() - new Date(a.registered_at).getTime())
+            .slice(0, 5)
+            .map(d => ({
+                id: d.id,
+                fullName: d.full_name,
+                bloodGroup: d.blood_group,
+                registeredAt: d.registered_at
+            }));
+    },
+
+    getDonations: async (userId?: string) => {
+        await delay(400);
+        let data = donationsStore;
+        if (userId) {
+            data = data.filter(d => d.donor_id === userId);
+        }
+        return data;
+    },
+
+    getUpcomingDonations: async () => {
+        await delay(300);
+        // Mock upcoming donations from random eligible donors
+        const eligible = donorsStore.filter(d => d.is_eligible).slice(0, 3);
+        return eligible.map((d, i) => ({
+            id: `up-${i}`,
+            date: format(new Date(Date.now() + (i + 1) * 86400000 * 3), 'yyyy-MM-dd'),
+            location: d.city || 'City Hospital',
+            donorName: d.full_name,
+            bloodGroup: d.blood_group
+        }));
+    },
+
+    addDonor: async (data: any) => {
+        await delay(500);
+        const newDonor: Donor = {
+            id: Math.random().toString(36).substr(2, 9),
+            ...data,
+            role: 'donor',
+            is_eligible: true,
+            total_donations: 0,
+            last_donation_date: null,
+            registered_at: new Date().toISOString()
+        };
+        donorsStore.unshift(newDonor);
+        return newDonor;
     }
 };

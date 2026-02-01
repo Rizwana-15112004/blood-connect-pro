@@ -30,7 +30,7 @@ export default function Index() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
                 </span>
-                Urgent: O+ Blood Needed in New York
+                Urgent: O+ Blood Needed in Mumbai
               </div>
 
               <h1 className="text-5xl font-extrabold leading-tight text-foreground sm:text-6xl lg:text-7xl mb-6 tracking-tight">
@@ -172,9 +172,9 @@ export default function Index() {
 
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { quote: "I found a donor for my father in less than 30 minutes. This platform is a lifesaver.", author: "Sarah Jenkins", role: "Recipient" },
-              { quote: "Donating is so easy now. I love tracking my health stats after every donation!", author: "Michael Chen", role: "Regular Donor" },
-              { quote: "As a hospital administrator, managing camps has never been smoother.", author: "Dr. Emily Weiss", role: "Medical Director" }
+              { quote: "I found a donor for my father in less than 30 minutes. This platform is a lifesaver.", author: "Anjali Gupta", role: "Recipient" },
+              { quote: "Donating is so easy now. I love tracking my health stats after every donation!", author: "Vikram Singh", role: "Regular Donor" },
+              { quote: "As a hospital administrator, managing camps has never been smoother.", author: "Dr. Rajesh Kumar", role: "Medical Director" }
             ].map((t, i) => (
               <motion.div
                 key={i}
