@@ -52,7 +52,7 @@ function DonationLogDialog({ onDonationSuccess, userBloodGroup }: { onDonationSu
         return cookieValue;
       };
 
-      const response = await fetch('/api/donate', {
+      const response = await fetch('/api/donate/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -143,7 +143,7 @@ export default function Profile() {
         return null; // GET requests don't strictly need it if we rely on session
       };
 
-      const donationsRes = await fetch('/api/my-donations', { credentials: 'same-origin' });
+      const donationsRes = await fetch('/api/my-donations/', { credentials: 'same-origin' });
       let realDonations: any[] = [];
       if (donationsRes.ok) {
         realDonations = await donationsRes.json();

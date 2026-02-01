@@ -5,7 +5,7 @@ import path from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: '/blood-connect-pro/',
+  base: mode === 'production' ? '/blood-connect-pro/' : '/',
   server: {
     host: "::",
     port: 8080,
