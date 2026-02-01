@@ -23,13 +23,9 @@ urlpatterns = [
     path('api/my-donations/', DonorHistoryView.as_view()),
 
     # Admin
-    path('api/admin/donations/pending', GetPendingDonationsView.as_view()),
+    # Admin
     path('api/admin/donations/pending/', GetPendingDonationsView.as_view()),
-    path('api/admin/donations/verify', VerifyDonationView.as_view()),
-    path('api/admin/donations/pending/', GetPendingDonationsView.as_view()),
-    path('api/admin/donations/verify', VerifyDonationView.as_view()),
     path('api/admin/donations/verify/', VerifyDonationView.as_view()),
-    path('api/admin/stats', DashboardStatsView.as_view()),
     path('api/admin/stats/', DashboardStatsView.as_view()),
 
     re_path(r'^.*$', ReactAppView.as_view()),
