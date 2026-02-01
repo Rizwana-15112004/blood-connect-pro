@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { CheckCircle, XCircle, AlertTriangle, Clock, Heart } from 'lucide-react';
+import { CheckCircle, XCircle, AlertTriangle, Clock, Heart, Scale, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { EligibilityResult, formatEligibilityCategory } from '@/lib/eligibility';
 import { cn } from '@/lib/utils';
@@ -8,10 +8,12 @@ import { Progress } from '@/components/ui/progress';
 interface EligibilityCardProps {
   eligibility: EligibilityResult;
   lastDonationDate?: Date;
+  age?: number;
+  weight?: number;
   className?: string;
 }
 
-export function EligibilityCard({ eligibility, lastDonationDate, className }: EligibilityCardProps) {
+export function EligibilityCard({ eligibility, lastDonationDate, age, weight, className }: EligibilityCardProps) {
   const getStatusIcon = () => {
     switch (eligibility.category) {
       case 'eligible':
@@ -28,13 +30,13 @@ export function EligibilityCard({ eligibility, lastDonationDate, className }: El
   const getStatusColor = () => {
     switch (eligibility.category) {
       case 'eligible':
-        return 'border-green-200 bg-green-50';
+        return 'border-green-200 bg-green-50 dark:bg-green-900/20 dark:border-green-900';
       case 'temporarily_ineligible':
-        return 'border-yellow-200 bg-yellow-50';
+        return 'border-yellow-200 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-900';
       case 'permanently_ineligible':
-        return 'border-red-200 bg-red-50';
+        return 'border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-900';
       case 'needs_review':
-        return 'border-orange-200 bg-orange-50';
+        return 'border-orange-200 bg-orange-50 dark:bg-orange-900/20 dark:border-orange-900';
     }
   };
 
@@ -49,10 +51,10 @@ export function EligibilityCard({ eligibility, lastDonationDate, className }: El
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className={cn('rounded-xl border p-6', getStatusColor(), className)}
+      className={cn('rounded-xl border p-6 dark:text-gray-100 transition-colors', getStatusColor(), className)}
     >
       <div className="flex items-start gap-4">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-sm">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white dark:bg-gray-800 shadow-sm">
           {getStatusIcon()}
         </div>
         <div className="flex-1">
@@ -71,7 +73,7 @@ export function EligibilityCard({ eligibility, lastDonationDate, className }: El
           <span className="text-sm font-medium text-foreground">Health Score</span>
           <span className="text-sm font-bold text-foreground">{eligibility.healthScore}%</span>
         </div>
-        <div className="h-3 w-full overflow-hidden rounded-full bg-white">
+        <div className="h-3 w-full overflow-hidden rounded-full bg-white dark:bg-gray-700">
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${eligibility.healthScore}%` }}
@@ -81,9 +83,34 @@ export function EligibilityCard({ eligibility, lastDonationDate, className }: El
         </div>
       </div>
 
+      {/* User Data Summary */}
+      {(age !== undefined || weight !== undefined) && (
+        <div className="mt-6 grid grid-cols-2 gap-4">
+          {age !== undefined && (
+            <div className="flex items-center gap-3 rounded-lg bg-white/60 dark:bg-black/20 p-3">
+              <Calendar className="h-5 w-5 text-muted-foreground" />
+              <div>
+                <p className="text-xs text-muted-foreground">Age</p>
+                <p className="font-semibold text-foreground">{age} Years</p>
+              </div>
+            </div>
+          )}
+          {weight !== undefined && (
+            <div className="flex items-center gap-3 rounded-lg bg-white/60 dark:bg-black/20 p-3">
+              <Scale className="h-5 w-5 text-muted-foreground" />
+              <div>
+                <p className="text-xs text-muted-foreground">Weight</p>
+                <p className="font-semibold text-foreground">{weight} kg</p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+
       {/* Next Eligible Date */}
       {eligibility.nextEligibleDate && (
-        <div className="mt-4 rounded-lg bg-white p-4">
+        <div className="mt-4 rounded-lg bg-white dark:bg-gray-800 p-4">
           <div className="flex items-center gap-3">
             <Heart className="h-5 w-5 text-primary" />
             <div>
@@ -100,7 +127,7 @@ export function EligibilityCard({ eligibility, lastDonationDate, className }: El
 
       {/* Last Donation */}
       {lastDonationDate && (
-        <div className="mt-3 rounded-lg bg-white/50 p-3">
+        <div className="mt-3 rounded-lg bg-white/50 dark:bg-gray-800/50 p-3">
           <p className="text-xs text-muted-foreground">Last Donation</p>
           <p className="font-medium text-foreground">
             {format(lastDonationDate, 'MMMM d, yyyy')}

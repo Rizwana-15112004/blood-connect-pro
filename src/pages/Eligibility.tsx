@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { EligibilityCard } from '@/components/donor/EligibilityCard';
 import {
   checkEligibility,
+  calculateAge,
   DonorHealthData,
   EligibilityResult
 } from '@/lib/eligibility';
@@ -297,6 +298,8 @@ export default function Eligibility() {
               <EligibilityCard
                 eligibility={result}
                 lastDonationDate={formData.lastDonationDate ? new Date(formData.lastDonationDate) : undefined}
+                age={formData.dateOfBirth ? calculateAge(new Date(formData.dateOfBirth)) : undefined}
+                weight={formData.weight ? parseFloat(formData.weight) : undefined}
               />
             ) : (
               <div className="flex h-full flex-col items-center justify-center rounded-xl border bg-muted/30 p-12 text-center">
