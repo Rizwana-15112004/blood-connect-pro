@@ -60,9 +60,24 @@ export default function RequestBlood() {
                 credentials: 'same-origin'
             });
 
-            const data = await response.json();
+            let data;
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.indexOf("application/json") !== -1) {
+                try {
+                    data = await response.json();
+                } catch (e) {
+                    throw new Error('Invalid JSON response from server');
+                }
+            } else {
+                // If not JSON, likely an HTML error page or empty
+                if (!response.ok) {
+                    throw new Error(`Server Error: ${response.status} ${response.statusText}`);
+                }
+            }
 
-            if (!response.ok) throw new Error(data.error || 'Submission failed');
+            if (!response.ok) {
+                throw new Error(data?.error || `Request failed: ${response.status}`);
+            }
 
             toast({
                 title: "Request Submitted Successfully",
