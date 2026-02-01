@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path, re_path
-from web.views import ReactAppView, LoginView, RegisterView, LogoutView, UserView, GetCSRFToken, RequestBloodView, GetRequestsView, AllocateDonorView, LogDonationView, GetPendingDonationsView, VerifyDonationView, DonorHistoryView
+from web.views import ReactAppView, LoginView, RegisterView, LogoutView, UserView, GetCSRFToken, RequestBloodView, GetRequestsView, AllocateDonorView, LogDonationView, GetPendingDonationsView, VerifyDonationView, DonorHistoryView, UpdateEligibilityView, DashboardStatsView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -15,6 +15,8 @@ urlpatterns = [
     path('api/user/', UserView.as_view()),
     path('api/csrf', GetCSRFToken.as_view()),
     path('api/csrf/', GetCSRFToken.as_view()),
+    path('api/update-eligibility', UpdateEligibilityView.as_view()),
+    path('api/update-eligibility/', UpdateEligibilityView.as_view()),
 
     # Blood Requests
     path('api/request-blood', RequestBloodView.as_view()),
@@ -34,7 +36,11 @@ urlpatterns = [
     path('api/admin/donations/pending', GetPendingDonationsView.as_view()),
     path('api/admin/donations/pending/', GetPendingDonationsView.as_view()),
     path('api/admin/donations/verify', VerifyDonationView.as_view()),
+    path('api/admin/donations/pending/', GetPendingDonationsView.as_view()),
+    path('api/admin/donations/verify', VerifyDonationView.as_view()),
     path('api/admin/donations/verify/', VerifyDonationView.as_view()),
+    path('api/admin/stats', DashboardStatsView.as_view()),
+    path('api/admin/stats/', DashboardStatsView.as_view()),
 
     re_path(r'^.*$', ReactAppView.as_view()),
 ]

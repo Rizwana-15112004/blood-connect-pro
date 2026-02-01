@@ -10,7 +10,9 @@ from django.views.generic import TemplateView
 from django.views import View
 from django.core.mail import send_mail
 from django.conf import settings
-from .models import BloodRequest, Donation, Inventory
+from django.core.mail import send_mail
+from django.conf import settings
+from .models import BloodRequest, Donation, Inventory, DonorProfile
 
 @method_decorator(csrf_exempt, name='dispatch')
 class LogDonationView(View):
@@ -223,7 +225,29 @@ class LoginView(View):
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
-                return JsonResponse({'user': {'id': user.id, 'email': user.username, 'role': 'admin' if user.is_staff else 'donor'}})
+            if user is not None:
+                login(request, user)
+                # Fetch profile data
+                profile_data = {}
+                try:
+                    profile = user.profile
+                    profile_data = {
+                        'isEligible': profile.is_eligible,
+                        'bloodGroup': profile.blood_group,
+                        'phone': profile.phone,
+                        'city': profile.city
+                    }
+                except DonorProfile.DoesNotExist:
+                    profile_data = {'isEligible': False} # Default if missing
+                    
+                return JsonResponse({
+                    'user': {
+                        'id': user.id, 
+                        'email': user.username, 
+                        'role': 'admin' if user.is_staff else 'donor',
+                        **profile_data
+                    }
+                })
             return JsonResponse({'error': 'Invalid credentials'}, status=400)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
@@ -240,7 +264,13 @@ class RegisterView(View):
             
             user = User.objects.create_user(username=email, email=email, password=password)
             login(request, user)
-            return JsonResponse({'user': {'id': user.id, 'email': user.username, 'role': 'donor'}}) # Default role
+            user = User.objects.create_user(username=email, email=email, password=password)
+            
+            # Create Donor Profile
+            DonorProfile.objects.create(user=user, is_eligible=False)
+            
+            login(request, user)
+            return JsonResponse({'user': {'id': user.id, 'email': user.username, 'role': 'donor', 'isEligible': False}})
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
 
@@ -252,5 +282,52 @@ class LogoutView(View):
 class UserView(View):
     def get(self, request):
         if request.user.is_authenticated:
-            return JsonResponse({'user': {'id': request.user.id, 'email': request.user.username, 'role': 'admin' if request.user.is_staff else 'donor'}})
+        if request.user.is_authenticated:
+            profile_data = {}
+            try:
+                profile = request.user.profile
+                profile_data = {
+                    'isEligible': profile.is_eligible,
+                    'bloodGroup': profile.blood_group,
+                    'phone': profile.phone,
+                    'city': profile.city
+                }
+            except DonorProfile.DoesNotExist:
+                 profile_data = {'isEligible': False}
+
+            return JsonResponse({
+                'user': {
+                    'id': request.user.id, 
+                    'email': request.user.username, 
+                    'role': 'admin' if request.user.is_staff else 'donor',
+                    **profile_data
+                }
+            })
         return JsonResponse({'user': None})
+
+class DashboardStatsView(View):
+    def get(self, request):
+        if not request.user.is_staff: # Admin only
+             return JsonResponse({'error': 'Unauthorized'}, status=401)
+        
+        total_donors = DonorProfile.objects.count()
+        total_donations = Donation.objects.count()
+        
+        # Calculate total units from Inventory
+        # Convert Decimal to float for JSON
+        total_units = 0
+        for item in Inventory.objects.all():
+            total_units += float(item.units_available)
+            
+        # Eligible donors
+        eligible_donors = DonorProfile.objects.filter(is_eligible=True).count()
+        
+        return JsonResponse({
+            'totalDonors': total_donors,
+            'totalDonations': total_donations,
+            'totalUnits': total_units,
+            'eligibleDonors': eligible_donors,
+            'thisWeekDonors': 0, # Placeholder or implement date filtering
+            'thisMonthDonors': 0,
+            'lastMonthDonors': 0
+        })

@@ -43,9 +43,10 @@ export default function AdminDashboard() {
             // We need to implement `GetInventoryView` or similar if we want real data.
             // For this step, I'll fetch Requests and Pending Donations.
 
-            const [paramRequests, pendingDonations] = await Promise.all([
+            const [paramRequests, pendingDonations, statsData] = await Promise.all([
                 fetch('/api/all-requests').then(res => res.json()),
-                fetch('/api/admin/donations/pending/').then(res => res.json())
+                fetch('/api/admin/donations/pending/').then(res => res.json()),
+                fetch('/api/admin/stats').then(res => res.json())
             ]);
 
             // We need a real inventory endpoint. I will assume we add it or use mock for now for that part?
@@ -54,6 +55,10 @@ export default function AdminDashboard() {
             // BUT strictly fetch requests from real API.
 
             setPendingRequestsCount(paramRequests.filter((r: any) => r.status === 'pending').length);
+
+            if (statsData) {
+                setStats(statsData);
+            }
 
             // TODO: Wire up other stats when endpoints exist.
             // For now, requests are the critical part requested.

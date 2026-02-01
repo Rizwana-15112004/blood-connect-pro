@@ -7,11 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { EligibilityCard } from '@/components/donor/EligibilityCard';
-import { 
-  checkEligibility, 
-  DonorHealthData, 
-  EligibilityResult 
+import {
+  checkEligibility,
+  DonorHealthData,
+  EligibilityResult
 } from '@/lib/eligibility';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 import {
   Select,
   SelectContent,
@@ -37,8 +39,10 @@ export default function Eligibility() {
   });
 
   const [result, setResult] = useState<EligibilityResult | null>(null);
+  const { user } = useAuth();
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.dateOfBirth || !formData.gender || !formData.weight) {
@@ -62,6 +66,47 @@ export default function Eligibility() {
 
     const eligibilityResult = checkEligibility(healthData);
     setResult(eligibilityResult);
+
+    if (eligibilityResult.isEligible && user) {
+      // Save to backend
+      try {
+        const getCookie = (name: string) => {
+          let cookieValue = null;
+          if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+              const cookie = cookies[i].trim();
+              if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+              }
+            }
+          }
+          return cookieValue;
+        };
+
+        fetch('/api/update-eligibility/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken') || ''
+          },
+          body: JSON.stringify({
+            isEligible: true,
+            lastDonationDate: formData.lastDonationDate
+            // We could send more profile data here if needed
+          })
+        }).then(res => {
+          if (res.ok) {
+            toast({
+              title: "Profile Updated",
+              description: "Your eligibility status has been saved.",
+              className: "bg-green-600 text-white"
+            });
+          }
+        });
+      } catch (e) { console.error("Failed to update profile", e); }
+    }
   };
 
   return (
@@ -103,8 +148,8 @@ export default function Eligibility() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="gender">Gender *</Label>
-                    <Select 
-                      value={formData.gender} 
+                    <Select
+                      value={formData.gender}
                       onValueChange={(value) => setFormData({ ...formData, gender: value as 'male' | 'female' | 'other' })}
                     >
                       <SelectTrigger>
@@ -185,7 +230,7 @@ export default function Eligibility() {
                     <Checkbox
                       id="chronic"
                       checked={formData.hasChronicDisease}
-                      onCheckedChange={(checked) => 
+                      onCheckedChange={(checked) =>
                         setFormData({ ...formData, hasChronicDisease: checked as boolean })
                       }
                     />
@@ -197,7 +242,7 @@ export default function Eligibility() {
                     <Checkbox
                       id="medication"
                       checked={formData.isOnMedication}
-                      onCheckedChange={(checked) => 
+                      onCheckedChange={(checked) =>
                         setFormData({ ...formData, isOnMedication: checked as boolean })
                       }
                     />
@@ -210,7 +255,7 @@ export default function Eligibility() {
                       <Checkbox
                         id="pregnant"
                         checked={formData.isPregnant}
-                        onCheckedChange={(checked) => 
+                        onCheckedChange={(checked) =>
                           setFormData({ ...formData, isPregnant: checked as boolean })
                         }
                       />
