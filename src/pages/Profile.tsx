@@ -71,12 +71,14 @@ function DonationLogDialog({ onDonationSuccess, userBloodGroup }: { onDonationSu
         onDonationSuccess();
         setIsOpen(false);
       } else {
-        throw new Error("Failed to log donation");
+        const errorData = await response.json().catch(() => ({ error: response.statusText }));
+        throw new Error(errorData.error || `Server Error: ${response.status}`);
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Donation Log Error:", error);
       toast({
-        title: "Error",
-        description: "Could not log donation. Please try again.",
+        title: "Submission Failed",
+        description: error.message || "Could not log donation. Please try again.",
         variant: "destructive"
       });
     } finally {
