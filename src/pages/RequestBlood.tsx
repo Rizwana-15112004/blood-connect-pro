@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Heart, Activity, MapPin, Phone, User } from 'lucide-react';
+import { Heart, Activity, MapPin, Phone, User, Mail } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/services/api';
@@ -28,6 +28,7 @@ export default function RequestBlood() {
         hospital: '',
         city: '',
         contactNumber: '',
+        email: '',
         urgency: '',
         additionalNotes: ''
     });
@@ -52,6 +53,7 @@ export default function RequestBlood() {
                 hospital: '',
                 city: '',
                 contactNumber: '',
+                email: '',
                 urgency: '',
                 additionalNotes: ''
             });
@@ -169,6 +171,23 @@ export default function RequestBlood() {
                                             />
                                         </div>
                                         <p className="text-xs text-muted-foreground">This number will only be visible to admins.</p>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="email">Email ID (for Allocation Alerts)</Label>
+                                        <div className="relative">
+                                            <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                            <Input
+                                                id="email"
+                                                placeholder="your-email@example.com"
+                                                className="pl-9"
+                                                required
+                                                type="email"
+                                                value={formData.email}
+                                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                            />
+                                        </div>
+                                        <p className="text-xs text-muted-foreground">We will send donor details to this email.</p>
                                     </div>
 
                                     <div className="space-y-2">

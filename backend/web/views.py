@@ -123,9 +123,10 @@ class GetRequestsView(View):
                 'location': r.city, # Mapping city to location
                 'status': r.status.lower(), # frontend expects lowercase
                 'request_date': r.created_at.isoformat(),
-                'assigned_donor_id': None, # We need to add this field to model if not present.
+                'assigned_donor_id': r.assigned_donor_id,
                 'units': 1, # Default or add to model
                 'reason': r.additional_notes,
+                'requester_email': r.requester_email,
                 'requester_id': 'guest' 
             })
         return JsonResponse(data, safe=False)
@@ -143,44 +144,48 @@ class AllocateDonorView(View):
             if status:
                 blood_request.status = status.upper()
             
-            if donor_id:
                 blood_request.assigned_donor_id = donor_id
                 
-                # Fetch donor email (assuming User model or Donor Profile)
-                # Since assigned_donor_id is just an ID string in current model, we need to find the user.
-                # Assuming donor_id maps to User.id
+                # Fetch donor details
                 try:
                     donor_user = User.objects.get(id=donor_id)
-                    donor_email = donor_user.email
-                    
-                    # Send Email (Real)
-                    subject = f"Urgent Blood Request Allocation: {blood_request.blood_group}"
-                    message = f"""
-                    Dear {donor_user.username},
-                    
-                    You have been identified as a matching donor for an urgent blood request.
-                    
-                    Patient: {blood_request.patient_name}
-                    Blood Group: {blood_request.blood_group}
-                    Hospital: {blood_request.hospital}
-                    Location: {blood_request.city}
-                    Contact: {blood_request.contact_number}
-                    
-                    Please contact the requester immediately if you are available to donate.
-                    
-                    Thank you,
-                    BloodLife Team
-                    """
-                    
-                    send_mail(
-                        subject,
-                        message,
-                        settings.DEFAULT_FROM_EMAIL if hasattr(settings, 'DEFAULT_FROM_EMAIL') else 'noreply@bloodlife.com',
-                        [donor_email],
-                        fail_silently=False,
-                    )
+                    donor_name = donor_user.first_name or donor_user.username
+                    donor_phone = ""
+                    try:
+                        donor_phone = donor_user.profile.phone
+                    except: pass
+
+                    # Send Email to Requester
+                    if blood_request.requester_email:
+                        subject = f"Donor Allocated: BloodLife Request for {blood_request.blood_group}"
+                        message = f"""
+                        Dear Requester,
+                        
+                        We have allocated a donor for your blood request.
+                        
+                        Patient: {blood_request.patient_name}
+                        Blood Group Requested: {blood_request.blood_group}
+                        
+                        Donor Details:
+                        Name: {donor_name}
+                        Contact Number: {donor_phone}
+                        
+                        Please contact the donor as soon as possible to coordinate the donation.
+                        
+                        Thank you,
+                        BloodLife Team
+                        """
+                        
+                        send_mail(
+                            subject,
+                            message,
+                            settings.DEFAULT_FROM_EMAIL if hasattr(settings, 'DEFAULT_FROM_EMAIL') else 'noreply@bloodlife.com',
+                            [blood_request.requester_email],
+                            fail_silently=False,
+                        )
+                        print(f"Allocation email sent to {blood_request.requester_email}")
                 except User.DoesNotExist:
-                    print(f"Donor with ID {donor_id} not found in User DB, skipping email.")
+                    print(f"Donor with ID {donor_id} not found, skipping email.")
                 except Exception as e:
                     print(f"Failed to send email: {e}")
 
@@ -202,6 +207,7 @@ class RequestBloodView(View):
                 hospital=data.get('hospital'),
                 city=data.get('city'),
                 contact_number=data.get('contactNumber'),
+                requester_email=data.get('email'),
                 urgency=data.get('urgency'),
                 additional_notes=data.get('additionalNotes', '')
             )

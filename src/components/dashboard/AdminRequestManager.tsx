@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Check, X, User, MapPin, Search } from 'lucide-react';
+import { Check, X, User, MapPin, Search, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { mockService, BloodRequest, Donor } from '@/services/mockService';
+import { api } from '@/services/api';
 import {
     Dialog,
     DialogContent,
@@ -60,13 +61,17 @@ export function AdminRequestManager() {
 
     const confirmApproval = async () => {
         if (selectedRequest && selectedDonorId) {
-            await mockService.updateRequestStatus(selectedRequest.id, 'approved', selectedDonorId);
-            const donorName = donors.find(d => d.id === selectedDonorId)?.full_name;
-            toast.success(`Request accepted! Notification sent to donor ${donorName} at ${selectedRequest.location}.`);
-            setIsDialogOpen(false);
-            setSelectedRequest(null);
-            setSelectedDonorId('');
-            loadData();
+            try {
+                await api.allocateDonor(selectedRequest.id, selectedDonorId, 'approved');
+                const donorName = donors.find(d => d.id === selectedDonorId)?.full_name;
+                toast.success(`Donor allocated! A real email has been sent to the requester (${selectedRequest.requester_email || 'Not provided'}) with the donor's details.`);
+                setIsDialogOpen(false);
+                setSelectedRequest(null);
+                setSelectedDonorId('');
+                loadData();
+            } catch (error: any) {
+                toast.error(error.message || "Failed to allocate donor");
+            }
         } else {
             toast.warning("Please select a donor to assign.");
         }
@@ -99,8 +104,15 @@ export function AdminRequestManager() {
                                 <div className="flex justify-between items-start mb-4">
                                     <div>
                                         <h4 className="font-bold text-lg">{req.patient_name}</h4>
-                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                            <MapPin className="h-3 w-3" /> {req.location}
+                                        <div className="flex flex-col gap-1 mt-1">
+                                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                <MapPin className="h-3 w-3" /> {req.location}
+                                            </div>
+                                            {req.requester_email && (
+                                                <div className="flex items-center gap-2 text-xs text-primary font-medium">
+                                                    <Mail className="h-3 w-3" /> {req.requester_email}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                     <Badge variant="outline" className="text-base px-3 py-1 bg-white dark:bg-slate-900 font-bold text-red-600 border-red-200">
@@ -108,7 +120,7 @@ export function AdminRequestManager() {
                                     </Badge>
                                 </div>
 
-                                <p className="text-sm bg-white/50 dark:bg-slate-900/50 p-2 rounded mb-4">
+                                <p className="text-sm bg-white/50 dark:bg-slate-900/50 p-2 rounded mb-4 italic">
                                     Reason: {req.reason}
                                 </p>
 

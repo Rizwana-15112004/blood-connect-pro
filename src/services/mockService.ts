@@ -48,6 +48,7 @@ export interface BloodRequest {
     requester_id: string;
     patient_name: string;
     blood_group: string;
+    requester_email?: string | null;
     units: number;
     reason: string;
     location: string;
@@ -292,6 +293,7 @@ export const mockService = {
             city: data.city,
             hospital: data.hospital,
             contact_number: data.contactNumber,
+            requester_email: data.email,
             urgency: data.urgency,
             additional_notes: data.additionalNotes,
             status: 'pending',

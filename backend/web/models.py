@@ -20,6 +20,7 @@ class BloodRequest(models.Model):
     hospital = models.CharField(max_length=200)
     city = models.CharField(max_length=100)
     contact_number = models.CharField(max_length=20)
+    requester_email = models.EmailField(max_length=100, blank=True, null=True)
     urgency = models.CharField(max_length=20, choices=URGENCY_CHOICES, default='medium')
     additional_notes = models.TextField(blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
