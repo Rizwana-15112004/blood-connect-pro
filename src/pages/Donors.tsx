@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { BloodGroupBadge } from '@/components/donor/BloodGroupBadge';
 import { Badge } from '@/components/ui/badge';
-import { mockService, Donor } from '@/lib/mockData';
+import { mockService, Donor } from '@/services/mockService';
 // import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { useNavigate, Navigate } from 'react-router-dom';

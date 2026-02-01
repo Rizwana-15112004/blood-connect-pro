@@ -9,7 +9,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { mockService } from '@/lib/mockData';
+import { mockService } from '@/services/mockService';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';

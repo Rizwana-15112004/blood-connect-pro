@@ -6,7 +6,7 @@ import { DonationCalendar } from '@/components/donor/DonationCalendar';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { calculateNextEligibleDate } from '@/lib/eligibility';
-import { mockService } from '@/lib/mockData';
+import { mockService } from '@/services/mockService';
 import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

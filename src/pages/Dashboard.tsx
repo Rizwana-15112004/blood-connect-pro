@@ -12,7 +12,7 @@ import { UrgentBloodAlert } from '@/components/dashboard/UrgentBloodAlert';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { mockService } from '@/lib/mockData';
+import { mockService } from '@/services/mockService';
 // import { supabase } from '@/integrations/supabase/client';
 import { subDays, subMonths, startOfWeek, startOfMonth, format } from 'date-fns';
 import { BloodRequestSection } from '@/components/dashboard/BloodRequestSection';

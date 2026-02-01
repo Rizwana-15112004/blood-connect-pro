@@ -5,7 +5,7 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { BloodGroupBadge } from '@/components/donor/BloodGroupBadge';
 import { Progress } from '@/components/ui/progress';
-import { mockService, InventoryItem } from '@/lib/mockData';
+import { mockService, InventoryItem } from '@/services/mockService';
 // import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 // interface InventoryItem ... (Imported from mockData)

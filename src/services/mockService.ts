@@ -59,6 +59,7 @@ export interface BloodRequest {
     status: 'pending' | 'approved' | 'rejected' | 'APPROVED' | 'REJECTED' | 'PENDING';
     assigned_donor_id: string | null;
     created_at: string;
+    request_date?: string; // Alias for legacy code compatibility
 }
 
 export interface User {
@@ -604,6 +605,16 @@ export const mockService = {
     },
 
     // --- UPDATED REQUEST LOGIC ---
+
+    getDonors: async () => {
+        await delay(500);
+        return donorsStore;
+    },
+
+    // Alias for compatibility
+    addRequest: async (data: any) => {
+        return mockService.createRequest(data);
+    },
 
     updateRequestStatus: async (requestId: string, status: 'approved' | 'rejected', donorId?: string) => {
         await delay(500);
