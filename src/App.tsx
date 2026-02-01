@@ -32,7 +32,7 @@ const AuthenticatedApp = () => {
   useSecurity(); // Activate security listeners
   return (
     <>
-      <DemoBanner />
+
       <AnimatedRoutes />
     </>
   );
