@@ -27,6 +27,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { DonationCertificate } from '@/components/donor/DonationCertificate';
+import { Download } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -289,12 +291,13 @@ export default function Donations() {
                 <TableHead>Date</TableHead>
                 <TableHead>Center</TableHead>
                 <TableHead>Collected By</TableHead>
+                <TableHead className="text-right">Certificate</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="py-20 text-center">
+                  <TableCell colSpan={7} className="py-20 text-center">
                     <div className="flex items-center justify-center gap-2">
                       <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                       Loading donations...
@@ -303,7 +306,7 @@ export default function Donations() {
                 </TableRow>
               ) : filteredDonations.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="py-20 text-center text-muted-foreground">
+                  <TableCell colSpan={7} className="py-20 text-center text-muted-foreground">
                     No donations found
                   </TableCell>
                 </TableRow>
@@ -345,6 +348,21 @@ export default function Donations() {
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {donation.collected_by || '-'}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="ghost" size="sm" className="gap-2 text-primary hover:text-primary hover:bg-primary/5">
+                            <Download className="h-4 w-4" />
+                            Certificate
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-[850px] p-0 border-none bg-transparent shadow-none">
+                          <div className="flex justify-center p-4">
+                            <DonationCertificate donation={donation} />
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     </TableCell>
                   </motion.tr>
                 ))

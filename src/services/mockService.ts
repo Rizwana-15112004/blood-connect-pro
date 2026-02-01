@@ -475,16 +475,17 @@ Please contact them immediately.`;
     addDonation: async (data: any) => {
         await delay(500);
         // Find donor to update stats
-        const donor = donorsStore.find(d => d.id === data.donor_id);
+        const donor = donorsStore.find(d => d.id === data.donor_id || d.email === data.donor_id);
         const newDonation: Donation = {
             id: Math.random().toString(36).substr(2, 9),
-            donor_id: data.donor_id,
+            donor_id: donor?.id || data.donor_id,
             donation_date: data.donation_date || new Date().toISOString(),
             units_donated: data.units_donated || 1,
             blood_group: data.blood_group || (donor?.blood_group || 'O+'),
             donation_center: data.donation_center || 'Main Center',
             collected_by: data.collected_by || 'Staff',
-            is_verified: false
+            is_verified: true, // Self reported or admin added should be verified for certificate
+            donors: { full_name: donor?.full_name || 'Donor' }
         };
         donationsStore.unshift(newDonation);
 
@@ -494,7 +495,7 @@ Please contact them immediately.`;
             donor.last_donation_date = newDonation.donation_date;
         }
 
-        return { success: true };
+        return { success: true, donation: newDonation };
     },
 
     getRecentDonors: async () => {

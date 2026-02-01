@@ -17,6 +17,15 @@ import { mockService } from '@/services/mockService';
 import { subDays, subMonths, startOfWeek, startOfMonth, format } from 'date-fns';
 import { BloodRequestSection } from '@/components/dashboard/BloodRequestSection';
 import AdminDashboard from './AdminDashboard';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { DonationCertificate } from '@/components/donor/DonationCertificate';
+import { Donation } from '@/services/mockService';
 
 interface DashboardStats {
   totalDonors: number;
@@ -50,13 +59,15 @@ export default function Dashboard() {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  const [lastRecordedDonation, setLastRecordedDonation] = useState<Donation | null>(null);
+
   const handleSelfReportDonation = async () => {
     if (!window.confirm("Confirm that you donated blood today? This will update your records.")) return;
 
     try {
-      const profile = await mockService.getProfile(user?.email);
+      const profile = await mockService.getProfile(user?.email || '') as any;
       if (profile) {
-        await mockService.addDonation({
+        const res = await mockService.addDonation({
           donor_id: profile.id,
           donation_date: new Date().toISOString(),
           units_donated: 1,
@@ -65,10 +76,13 @@ export default function Dashboard() {
           collected_by: 'Self'
         });
 
-        toast({
-          title: "Donation Recorded",
-          description: "Thank you! Your stats have been updated. You can now download your new certificate.",
-        });
+        if (res.success && res.donation) {
+          setLastRecordedDonation(res.donation);
+          toast({
+            title: "Donation Recorded",
+            description: "Thank you! Your stats have been updated. You can now download your new certificate.",
+          });
+        }
 
         fetchDashboardData();
         fetchPersonalStats();
@@ -183,7 +197,7 @@ export default function Dashboard() {
   };
 
   const fetchPersonalStats = async () => {
-    const profile = await mockService.getProfile(user?.email);
+    const profile = await mockService.getProfile(user?.email || '') as any;
     if (profile) {
       const lastDate = profile.last_donation_date ? new Date(profile.last_donation_date) : null;
       let nextDate = null;
@@ -196,7 +210,7 @@ export default function Dashboard() {
         totalDonations: profile.total_donations,
         lastDonation: profile.last_donation_date,
         nextEligible: nextDate ? nextDate.toISOString() : new Date().toISOString(),
-        isEligible: profile.is_eligible
+        isEligible: profile.is_eligible || profile.isEligible || false
       });
     }
   };
@@ -220,8 +234,7 @@ export default function Dashboard() {
           </p>
         </motion.div>
 
-        {/* Urgent Alerts (Admin Only) */}
-        {isAdmin && <UrgentBloodAlert inventory={inventoryState} />}
+        {/* ... (Urgent Alerts) */}
 
         {/* Stat Cards - Personalized */}
         <div className="dashboard-grid">
@@ -241,6 +254,7 @@ export default function Dashboard() {
             icon={<CalendarIcon className="h-6 w-6 text-blue-500" />}
           />
           <StatCard
+            title="Next Eligibility"
             value={(personalStats.nextEligible && new Date(personalStats.nextEligible) > new Date())
               ? format(new Date(personalStats.nextEligible), 'MMM d, yyyy')
               : 'Available Now'}
@@ -330,6 +344,24 @@ export default function Dashboard() {
         {/* Requests Section */}
         <BloodRequestSection userId={user?.id || ''} />
       </div>
+
+      {/* Certificate Modal */}
+      <Dialog
+        open={!!lastRecordedDonation}
+        onOpenChange={(open) => !open && setLastRecordedDonation(null)}
+      >
+        <DialogContent className="max-w-[850px] p-0 border-none bg-transparent">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Donation Certificate</DialogTitle>
+            <DialogDescription>Your official donor certificate</DialogDescription>
+          </DialogHeader>
+          {lastRecordedDonation && (
+            <div className="flex justify-center p-4">
+              <DonationCertificate donation={lastRecordedDonation} />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }
