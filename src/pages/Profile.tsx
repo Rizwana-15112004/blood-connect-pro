@@ -180,15 +180,7 @@ export default function Profile() {
         setProfile(profileData as any);
 
         // Chart Data
-        const monthlyData: Record<string, number> = {};
-        verifiedDonations.forEach((d: any) => {
-          const monthKey = format(new Date(d.donation_date), 'MMM yyyy');
-          monthlyData[monthKey] = (monthlyData[monthKey] || 0) + Number(d.units);
-        });
-
-        const chartData = generate6MonthData(
-          Object.entries(monthlyData).map(([month, units]) => ({ month, units }))
-        );
+        const chartData = generate6MonthData(verifiedDonations);
         setMonthlyDonations(chartData);
       }
     } catch (error) {
