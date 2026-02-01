@@ -26,7 +26,7 @@ export function DonationApproval() {
 
     const fetchPendingDonations = async () => {
         try {
-            const response = await fetch('/api/admin/donations/pending');
+            const response = await fetch('/api/admin/donations/pending/');
             if (response.ok) {
                 const data = await response.json();
                 setDonations(data);
@@ -56,7 +56,7 @@ export function DonationApproval() {
                 return cookieValue;
             };
 
-            const response = await fetch('/api/admin/donations/verify', {
+            const response = await fetch('/api/admin/donations/verify/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -50,7 +50,7 @@ export default function RequestBlood() {
                 return cookieValue;
             };
 
-            const response = await fetch('/api/request-blood', {
+            const response = await fetch('/api/request-blood/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

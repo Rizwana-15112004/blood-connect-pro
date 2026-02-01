@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!csrftoken) {
         // Try to get CSRF token, but don't crash if it fails (HTML response etc)
         try {
-          await fetch('/api/csrf');
+          await fetch('/api/csrf/');
           csrftoken = getCSRFToken();
         } catch (e) {
           // Ignore error
@@ -75,10 +75,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const checkAuth = async () => {
     try {
       try {
-        await fetch('/api/csrf', { credentials: 'same-origin' });
+        await fetch('/api/csrf/', { credentials: 'same-origin' });
       } catch (e) { /* ignore */ }
 
-      const res = await fetchWithCSRF('/api/user');
+      const res = await fetchWithCSRF('/api/user/');
 
       // Strict JSON check
       const contentType = res.headers.get("content-type");
@@ -110,7 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string, isEligible: boolean) => {
     try {
-      const res = await fetchWithCSRF('/api/register', {
+      const res = await fetchWithCSRF('/api/register/', {
         method: 'POST',
         body: JSON.stringify({ email, password, isEligible }),
       });
@@ -154,7 +154,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const res = await fetchWithCSRF('/api/login', {
+      const res = await fetchWithCSRF('/api/login/', {
         method: 'POST',
         body: JSON.stringify({ email, password }),
       });
@@ -199,7 +199,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     try {
-      await fetchWithCSRF('/api/logout', { method: 'POST' });
+      await fetchWithCSRF('/api/logout/', { method: 'POST' });
     } catch (e) { }
 
     setUser(null);
