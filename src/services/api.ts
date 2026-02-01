@@ -11,8 +11,19 @@ const isLocal =
     window.location.hostname.endsWith('.gitpod.io') ||
     window.location.hostname.endsWith('.github.dev');
 
-// Force Mock Mode ONLY on production static hosting (like GitHub Pages)
-const isMockMode = window.location.hostname.includes('github.io') || window.location.hostname.includes('netlify.app');
+// Force Mock Mode ONLY on production static hosting (like GitHub Pages or Netlify)
+// If not on these, we assume there is a real Django backend available
+export const isMockMode = (
+    window.location.hostname.includes('github.io') ||
+    window.location.hostname.includes('netlify.app') ||
+    window.location.hostname.includes('vercel.app')
+) && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1');
+
+if (isMockMode) {
+    console.log("🚀 Application running in MOCK MODE (Demo Mode)");
+} else {
+    console.log("🌐 Application running in REAL BACKEND MODE");
+}
 
 // Helper to get CSRF token (only for Real Backend)
 const getCSRFToken = () => {

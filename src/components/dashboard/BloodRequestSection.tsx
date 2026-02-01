@@ -16,12 +16,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { mockService, BloodRequest, Donor } from '@/services/mockService';
+import { api } from '@/services/api';
+import type { BloodRequest, Donor } from '@/services/mockService';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
 
 export function BloodRequestSection({ userId }: { userId: number | string }) {
+    const { user } = useAuth();
     const [requests, setRequests] = useState<BloodRequest[]>([]);
     const [donors, setDonors] = useState<Donor[]>([]);
     const [isOpen, setIsOpen] = useState(false);
@@ -33,7 +36,8 @@ export function BloodRequestSection({ userId }: { userId: number | string }) {
         blood_group: '',
         units: '1',
         reason: '',
-        location: ''
+        location: '',
+        email: user?.email || ''
     });
 
     useEffect(() => {
@@ -41,35 +45,44 @@ export function BloodRequestSection({ userId }: { userId: number | string }) {
     }, [userId]);
 
     const loadData = async () => {
-        const [allRequests, allDonors] = await Promise.all([
-            mockService.getRequests(),
-            mockService.getDonors()
-        ]);
-        // Filter for current user
-        const userRequests = allRequests.filter(r => r.requester_id === String(userId));
-        setRequests(userRequests);
-        setDonors(allDonors);
+        try {
+            const [allRequests, allDonors] = await Promise.all([
+                api.getRequests(),
+                api.getDonors()
+            ]);
+            // Filter for current user by email or ID if available
+            // Note: Real backend uses requester_email primarily
+            const userRequests = allRequests.filter((r: any) =>
+                r.requester_id === String(userId) ||
+                (user?.email && r.requester_email === user.email)
+            );
+            setRequests(userRequests);
+            setDonors(allDonors);
+        } catch (error) {
+            console.error(error);
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         try {
-            await mockService.addRequest({
-                requester_id: String(userId),
-                patient_name: formData.patient_name,
-                blood_group: formData.blood_group,
+            await api.createRequest({
+                patientName: formData.patient_name,
+                bloodGroup: formData.blood_group,
                 units: parseInt(formData.units),
-                reason: formData.reason,
-                location: formData.location
+                additionalNotes: formData.reason,
+                hospital: formData.location,
+                email: formData.email,
+                urgency: 'medium'
             });
 
-            toast.success("Blood request submitted successfully");
+            toast.success("Blood request submitted to real backend!");
             setIsOpen(false);
-            setFormData({ patient_name: '', blood_group: '', units: '1', reason: '', location: '' });
+            setFormData({ patient_name: '', blood_group: '', units: '1', reason: '', location: '', email: user?.email || '' });
             loadData(); // Refresh
         } catch (error) {
-            toast.error("Failed to submit request");
+            toast.error("Failed to submit request to backend");
         } finally {
             setLoading(false);
         }
@@ -159,6 +172,19 @@ export function BloodRequestSection({ userId }: { userId: number | string }) {
                                             onChange={e => setFormData({ ...formData, location: e.target.value })}
                                         />
                                     </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="email">Your Email (for notifications)</Label>
+                                    <Input
+                                        id="email"
+                                        type="email"
+                                        required
+                                        placeholder="your@email.com"
+                                        value={formData.email}
+                                        onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                    />
+                                    <p className="text-[10px] text-muted-foreground">We will send donor details to this email once allocated.</p>
                                 </div>
 
                                 <div className="space-y-2">

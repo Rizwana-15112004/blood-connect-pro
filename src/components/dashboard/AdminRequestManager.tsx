@@ -65,10 +65,14 @@ export function AdminRequestManager() {
                 setIsDialogOpen(true);
             }
         } else {
-            // Reject immediately
-            await mockService.updateRequestStatus(id, 'rejected');
-            toast.info("Request rejected");
-            loadData();
+            try {
+                // Reject immediately
+                await api.allocateDonor(id, null, 'rejected');
+                toast.info("Request rejected");
+                loadData();
+            } catch (error: any) {
+                toast.error(error.message || "Failed to update request");
+            }
         }
     };
 

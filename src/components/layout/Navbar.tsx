@@ -8,6 +8,9 @@ import { cn } from '@/lib/utils';
 import { useScroll, useMotionValueEvent } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/components/theme-provider';
+import { isMockMode } from '@/services/api';
+import { Badge } from '@/components/ui/badge';
+import { AlertCircle, Zap } from 'lucide-react';
 
 export const Navbar = () => {
     const { scrollY } = useScroll();
@@ -56,6 +59,19 @@ export const Navbar = () => {
                             BloodLife
                         </span>
                     </Link>
+
+                    {/* Status Badge */}
+                    <div className="hidden lg:flex items-center ml-4">
+                        {isMockMode ? (
+                            <Badge variant="outline" className="gap-1 border-yellow-500/50 text-yellow-600 bg-yellow-50/50 dark:bg-yellow-900/10">
+                                <AlertCircle className="h-3 w-3" /> Demo Mode
+                            </Badge>
+                        ) : (
+                            <Badge variant="outline" className="gap-1 border-green-500/50 text-green-600 bg-green-50/50 dark:bg-green-900/10">
+                                <Zap className="h-3 w-3 fill-current" /> Live Server
+                            </Badge>
+                        )}
+                    </div>
 
                     {/* Desktop Navigation */}
                     <div className="hidden md:flex items-center gap-8">

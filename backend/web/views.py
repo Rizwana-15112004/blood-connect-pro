@@ -163,6 +163,7 @@ class AllocateDonorView(View):
 
                     # Send Email to Requester
                     if blood_request.requester_email:
+                        print(f"DEBUG: Attempting to send allocation email to {blood_request.requester_email}")
                         subject = f"Donor Allocated: BloodLife Request for {blood_request.blood_group}"
                         message = f"""
                         Dear Requester,
@@ -189,7 +190,9 @@ class AllocateDonorView(View):
                             [blood_request.requester_email],
                             fail_silently=False,
                         )
-                        print(f"Allocation email sent to {blood_request.requester_email}")
+                        print(f"SUCCESS: Allocation email sent to {blood_request.requester_email}")
+                    else:
+                        print(f"WARNING: No requester_email found for request {request_id}, cannot send email.")
                 except User.DoesNotExist:
                     print(f"Donor with ID {donor_id} not found, skipping email.")
                 except Exception as e:
