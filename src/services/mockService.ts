@@ -73,250 +73,61 @@ export interface User {
 // ----------------------------------------------------------------------
 
 const MOCK_INVENTORY: InventoryItem[] = [
-    { id: '1', blood_group: 'A+', units_available: 50, last_updated: new Date().toISOString() },
-    { id: '2', blood_group: 'A-', units_available: 20, last_updated: new Date().toISOString() },
-    { id: '3', blood_group: 'B+', units_available: 65, last_updated: new Date().toISOString() },
-    { id: '4', blood_group: 'B-', units_available: 15, last_updated: new Date().toISOString() },
-    { id: '5', blood_group: 'AB+', units_available: 30, last_updated: new Date().toISOString() },
-    { id: '6', blood_group: 'AB-', units_available: 10, last_updated: new Date().toISOString() },
-    { id: '7', blood_group: 'O+', units_available: 80, last_updated: new Date().toISOString() },
-    { id: '8', blood_group: 'O-', units_available: 25, last_updated: new Date().toISOString() },
+    { id: '1', blood_group: 'A+', units_available: 45, last_updated: new Date().toISOString() },
+    { id: '2', blood_group: 'A-', units_available: 12, last_updated: new Date().toISOString() },
+    { id: '3', blood_group: 'B+', units_available: 58, last_updated: new Date().toISOString() },
+    { id: '4', blood_group: 'B-', units_available: 8, last_updated: new Date().toISOString() },
+    { id: '5', blood_group: 'AB+', units_available: 22, last_updated: new Date().toISOString() },
+    { id: '6', blood_group: 'AB-', units_available: 5, last_updated: new Date().toISOString() },
+    { id: '7', blood_group: 'O+', units_available: 65, last_updated: new Date().toISOString() },
+    { id: '8', blood_group: 'O-', units_available: 18, last_updated: new Date().toISOString() },
 ];
 
 const MOCK_DONORS: Donor[] = [
-    {
-        id: '1',
-        full_name: 'Rahul Sharma',
-        email: 'rahul.sharma@example.com',
-        role: 'donor',
-        phone: '+91 98765 43210',
-        date_of_birth: '1990-05-15',
-        gender: 'male',
-        blood_group: 'O+',
-        weight: 72,
-        is_eligible: true,
-        total_donations: 8,
-        last_donation_date: subMonths(new Date(), 2).toISOString(),
-        registered_at: subMonths(new Date(), 24).toISOString(),
-        city: 'Mumbai',
-        state: 'Maharashtra',
-    },
-    {
-        id: '2',
-        full_name: 'Priya Patel',
-        email: 'priya.patel@example.com',
-        role: 'donor',
-        phone: '+91 98765 12345',
-        date_of_birth: '1995-08-22',
-        gender: 'female',
-        blood_group: 'A+',
-        weight: 60,
-        is_eligible: true,
-        total_donations: 3,
-        last_donation_date: subMonths(new Date(), 5).toISOString(),
-        registered_at: subMonths(new Date(), 10).toISOString(),
-        city: 'Ahmedabad',
-        state: 'Gujarat',
-    },
-    {
-        id: '3',
-        full_name: 'Amit Kumar',
-        email: 'amit.kumar@example.com',
-        role: 'donor',
-        phone: '+91 91234 56789',
-        date_of_birth: '1988-12-10',
-        gender: 'male',
-        blood_group: 'B+',
-        weight: 78,
-        is_eligible: false,
-        total_donations: 12,
-        last_donation_date: subDays(new Date(), 20).toISOString(),
-        registered_at: subMonths(new Date(), 36).toISOString(),
-        city: 'Delhi',
-        state: 'Delhi',
-    },
-    {
-        id: '4',
-        full_name: 'Sneha Reddy',
-        email: 'sneha.reddy@example.com',
-        role: 'donor',
-        phone: '+91 99887 76655',
-        date_of_birth: '1998-03-03',
-        gender: 'female',
-        blood_group: 'AB-',
-        weight: 55,
-        is_eligible: true,
-        total_donations: 1,
-        last_donation_date: subMonths(new Date(), 8).toISOString(),
-        registered_at: subMonths(new Date(), 9).toISOString(),
-        city: 'Hyderabad',
-        state: 'Telangana',
-    },
-    {
-        id: '5',
-        full_name: 'Vikram Singh',
-        email: 'vikram.singh@example.com',
-        role: 'donor',
-        phone: '+91 88776 65544',
-        date_of_birth: '1992-07-19',
-        gender: 'male',
-        blood_group: 'O-',
-        weight: 85,
-        is_eligible: true,
-        total_donations: 6,
-        last_donation_date: subMonths(new Date(), 4).toISOString(),
-        registered_at: subMonths(new Date(), 18).toISOString(),
-        city: 'Jaipur',
-        state: 'Rajasthan',
-    },
-    {
-        id: '6',
-        full_name: 'Anjali Gupta',
-        email: 'anjali.gupta@example.com',
-        role: 'donor',
-        phone: '+91 77665 54433',
-        date_of_birth: '1996-11-28',
-        gender: 'female',
-        blood_group: 'A-',
-        weight: 58,
-        is_eligible: true,
-        total_donations: 2,
-        last_donation_date: subMonths(new Date(), 6).toISOString(),
-        registered_at: subMonths(new Date(), 12).toISOString(),
-        city: 'Lucknow',
-        state: 'Uttar Pradesh',
-    },
+    // Recent Donors (Registered this week/month) - For "Recently Registered" list
+    { id: 'd1', full_name: 'Aarav Patel', email: 'aarav.p@example.com', role: 'donor', phone: '+91 98765 00001', date_of_birth: '1995-06-15', gender: 'male', blood_group: 'O+', weight: 75, is_eligible: true, total_donations: 0, last_donation_date: null, registered_at: subDays(new Date(), 1).toISOString(), city: 'Mumbai', state: 'Maharashtra' },
+    { id: 'd2', full_name: 'Diya Sharma', email: 'diya.s@example.com', role: 'donor', phone: '+91 98765 00002', date_of_birth: '1998-02-20', gender: 'female', blood_group: 'A-', weight: 55, is_eligible: true, total_donations: 0, last_donation_date: null, registered_at: subDays(new Date(), 2).toISOString(), city: 'Pune', state: 'Maharashtra' },
+    { id: 'd3', full_name: 'Ishaan Gupta', email: 'ishaan.g@example.com', role: 'donor', phone: '+91 98765 00003', date_of_birth: '1992-11-10', gender: 'male', blood_group: 'B+', weight: 80, is_eligible: true, total_donations: 5, last_donation_date: subMonths(new Date(), 4).toISOString(), registered_at: subDays(new Date(), 5).toISOString(), city: 'Delhi', state: 'Delhi' },
+    { id: 'd4', full_name: 'Ananya Singh', email: 'ananya.singh@example.com', role: 'donor', phone: '+91 98765 00004', date_of_birth: '2000-01-05', gender: 'female', blood_group: 'AB+', weight: 60, is_eligible: true, total_donations: 1, last_donation_date: subMonths(new Date(), 1).toISOString(), registered_at: subDays(new Date(), 7).toISOString(), city: 'Bangalore', state: 'Karnataka' },
+    { id: 'd5', full_name: 'Vihaan Reddy', email: 'vihaan.r@example.com', role: 'donor', phone: '+91 98765 00005', date_of_birth: '1990-08-30', gender: 'male', blood_group: 'O-', weight: 72, is_eligible: true, total_donations: 12, last_donation_date: subDays(new Date(), 45).toISOString(), registered_at: subDays(new Date(), 10).toISOString(), city: 'Hyderabad', state: 'Telangana' },
+
+    // Established Donors
+    { id: '1', full_name: 'Rahul Sharma', email: 'rahul.sharma@example.com', role: 'donor', phone: '+91 98765 43210', date_of_birth: '1990-05-15', gender: 'male', blood_group: 'O+', weight: 72, is_eligible: true, total_donations: 8, last_donation_date: subMonths(new Date(), 2).toISOString(), registered_at: subMonths(new Date(), 24).toISOString(), city: 'Mumbai', state: 'Maharashtra' },
+    { id: '2', full_name: 'Priya Patel', email: 'priya.patel@example.com', role: 'donor', phone: '+91 98765 12345', date_of_birth: '1995-08-22', gender: 'female', blood_group: 'A+', weight: 60, is_eligible: true, total_donations: 3, last_donation_date: subMonths(new Date(), 5).toISOString(), registered_at: subMonths(new Date(), 10).toISOString(), city: 'Ahmedabad', state: 'Gujarat' },
+    { id: '3', full_name: 'Amit Kumar', email: 'amit.kumar@example.com', role: 'donor', phone: '+91 91234 56789', date_of_birth: '1988-12-10', gender: 'male', blood_group: 'B+', weight: 78, is_eligible: false, total_donations: 12, last_donation_date: subDays(new Date(), 20).toISOString(), registered_at: subMonths(new Date(), 36).toISOString(), city: 'Delhi', state: 'Delhi' },
+    { id: '4', full_name: 'Sneha Reddy', email: 'sneha.reddy@example.com', role: 'donor', phone: '+91 99887 76655', date_of_birth: '1998-03-03', gender: 'female', blood_group: 'AB-', weight: 55, is_eligible: true, total_donations: 1, last_donation_date: subMonths(new Date(), 8).toISOString(), registered_at: subMonths(new Date(), 9).toISOString(), city: 'Hyderabad', state: 'Telangana' },
+    { id: '5', full_name: 'Vikram Singh', email: 'vikram.singh@example.com', role: 'donor', phone: '+91 88776 65544', date_of_birth: '1992-07-19', gender: 'male', blood_group: 'O-', weight: 85, is_eligible: true, total_donations: 6, last_donation_date: subMonths(new Date(), 4).toISOString(), registered_at: subMonths(new Date(), 18).toISOString(), city: 'Jaipur', state: 'Rajasthan' },
+    { id: '6', full_name: 'Anjali Gupta', email: 'anjali.gupta@example.com', role: 'donor', phone: '+91 77665 54433', date_of_birth: '1996-11-28', gender: 'female', blood_group: 'A-', weight: 58, is_eligible: true, total_donations: 2, last_donation_date: subMonths(new Date(), 6).toISOString(), registered_at: subMonths(new Date(), 12).toISOString(), city: 'Lucknow', state: 'Uttar Pradesh' },
     { id: '7', full_name: 'Rohan Mehta', email: 'rohan.mehta@example.com', role: 'donor', phone: '+91 99887 77665', date_of_birth: '1985-04-12', gender: 'male', blood_group: 'AB+', weight: 80, is_eligible: true, total_donations: 15, last_donation_date: subMonths(new Date(), 1).toISOString(), registered_at: subMonths(new Date(), 48).toISOString(), city: 'Pune', state: 'Maharashtra' },
     { id: '8', full_name: 'Sita Verma', email: 'sita.verma@example.com', role: 'donor', phone: '+91 88776 66554', date_of_birth: '1993-09-30', gender: 'female', blood_group: 'O+', weight: 62, is_eligible: true, total_donations: 4, last_donation_date: subMonths(new Date(), 5).toISOString(), registered_at: subMonths(new Date(), 24).toISOString(), city: 'Nagpur', state: 'Maharashtra' },
     { id: '9', full_name: 'Arjun Das', email: 'arjun.das@example.com', role: 'donor', phone: '+91 77665 55443', date_of_birth: '1991-02-14', gender: 'male', blood_group: 'B-', weight: 75, is_eligible: true, total_donations: 9, last_donation_date: subMonths(new Date(), 2).toISOString(), registered_at: subMonths(new Date(), 30).toISOString(), city: 'Kolkata', state: 'West Bengal' },
     { id: '10', full_name: 'Nisha Singh', email: 'nisha.singh@example.com', role: 'donor', phone: '+91 66554 44332', date_of_birth: '1997-06-25', gender: 'female', blood_group: 'A+', weight: 56, is_eligible: false, total_donations: 1, last_donation_date: subMonths(new Date(), 1).toISOString(), registered_at: subMonths(new Date(), 6).toISOString(), city: 'Patna', state: 'Bihar' },
     { id: '11', full_name: 'Karan Malhotra', email: 'karan.malhotra@example.com', role: 'donor', phone: '+91 99880 01122', date_of_birth: '1989-12-05', gender: 'male', blood_group: 'O-', weight: 82, is_eligible: true, total_donations: 7, last_donation_date: subMonths(new Date(), 3).toISOString(), registered_at: subMonths(new Date(), 36).toISOString(), city: 'Chandigarh', state: 'Punjab' },
-    { id: '12', full_name: 'Pooja Rani', email: 'pooja.rani@example.com', role: 'donor', phone: '+91 88770 02233', date_of_birth: '1994-08-18', gender: 'female', blood_group: 'AB-', weight: 64, is_eligible: true, total_donations: 3, last_donation_date: subMonths(new Date(), 4).toISOString(), registered_at: subMonths(new Date(), 20).toISOString(), city: 'Indore', state: 'Madhya Pradesh' },
-    { id: '13', full_name: 'Vikas Dubey', email: 'vikas.dubey@example.com', role: 'donor', phone: '+91 77660 03344', date_of_birth: '1990-03-22', gender: 'male', blood_group: 'B+', weight: 70, is_eligible: true, total_donations: 5, last_donation_date: subMonths(new Date(), 2).toISOString(), registered_at: subMonths(new Date(), 18).toISOString(), city: 'Bhopal', state: 'Madhya Pradesh' },
-    { id: '14', full_name: 'Meera Iyer', email: 'meera.iyer@example.com', role: 'donor', phone: '+91 66550 04455', date_of_birth: '1992-11-11', gender: 'female', blood_group: 'A-', weight: 59, is_eligible: true, total_donations: 2, last_donation_date: subMonths(new Date(), 7).toISOString(), registered_at: subMonths(new Date(), 14).toISOString(), city: 'Chennai', state: 'Tamil Nadu' },
-    { id: '15', full_name: 'Rajesh Koothrappali', email: 'rajesh.k@example.com', role: 'donor', phone: '+91 55440 05566', date_of_birth: '1987-05-02', gender: 'male', blood_group: 'O+', weight: 68, is_eligible: true, total_donations: 10, last_donation_date: subMonths(new Date(), 1).toISOString(), registered_at: subMonths(new Date(), 40).toISOString(), city: 'Bangalore', state: 'Karnataka' },
-    { id: '16', full_name: 'Deepika Padukone', email: 'deepika.p@example.com', role: 'donor', phone: '+91 99112 23344', date_of_birth: '1986-01-05', gender: 'female', blood_group: 'AB+', weight: 60, is_eligible: true, total_donations: 6, last_donation_date: subMonths(new Date(), 3).toISOString(), registered_at: subMonths(new Date(), 25).toISOString(), city: 'Mumbai', state: 'Maharashtra' },
-    { id: '17', full_name: 'Virat Kohli', email: 'virat.k@example.com', role: 'donor', phone: '+91 88223 34455', date_of_birth: '1988-11-05', gender: 'male', blood_group: 'A+', weight: 74, is_eligible: true, total_donations: 20, last_donation_date: subMonths(new Date(), 1).toISOString(), registered_at: subMonths(new Date(), 60).toISOString(), city: 'Delhi', state: 'Delhi' },
-    { id: '18', full_name: 'Sara Ali Khan', email: 'sara.ali@example.com', role: 'donor', phone: '+91 77334 45566', date_of_birth: '1995-08-12', gender: 'female', blood_group: 'B-', weight: 55, is_eligible: true, total_donations: 1, last_donation_date: subMonths(new Date(), 6).toISOString(), registered_at: subMonths(new Date(), 8).toISOString(), city: 'Mumbai', state: 'Maharashtra' },
-    { id: '19', full_name: 'Ranveer Singh', email: 'ranveer.s@example.com', role: 'donor', phone: '+91 66445 56677', date_of_birth: '1985-07-06', gender: 'male', blood_group: 'O-', weight: 80, is_eligible: true, total_donations: 12, last_donation_date: subMonths(new Date(), 2).toISOString(), registered_at: subMonths(new Date(), 36).toISOString(), city: 'Mumbai', state: 'Maharashtra' },
-    { id: '20', full_name: 'Alia Bhatt', email: 'alia.b@example.com', role: 'donor', phone: '+91 55556 67788', date_of_birth: '1993-03-15', gender: 'female', blood_group: 'A+', weight: 52, is_eligible: true, total_donations: 5, last_donation_date: subMonths(new Date(), 4).toISOString(), registered_at: subMonths(new Date(), 18).toISOString(), city: 'Mumbai', state: 'Maharashtra' },
 ];
 
 const MOCK_DONATIONS: Donation[] = [
-    {
-        id: '101',
-        donor_id: '1',
-        donation_date: subMonths(new Date(), 2).toISOString(),
-        units_donated: 1,
-        blood_group: 'O+',
-        donation_center: 'Mumbai City Hospital',
-        collected_by: 'Dr. A. Rao',
-        is_verified: true,
-        donors: { full_name: 'Rahul Sharma' }
-    },
-    {
-        id: '104',
-        donor_id: '1',
-        donation_date: subMonths(new Date(), 5).toISOString(),
-        units_donated: 1,
-        blood_group: 'O+',
-        donation_center: 'Mumbai Red Cross',
-        collected_by: 'Nurse Joy',
-        is_verified: true,
-        donors: { full_name: 'Rahul Sharma' }
-    },
-    {
-        id: '105',
-        donor_id: '1',
-        donation_date: subMonths(new Date(), 8).toISOString(),
-        units_donated: 1,
-        blood_group: 'O+',
-        donation_center: 'Mumbai City Hospital',
-        collected_by: 'Dr. A. Rao',
-        is_verified: true,
-        donors: { full_name: 'Rahul Sharma' }
-    },
-    {
-        id: '102',
-        donor_id: '3',
-        donation_date: subDays(new Date(), 20).toISOString(),
-        units_donated: 1,
-        blood_group: 'B+',
-        donation_center: 'Delhi Red Cross',
-        collected_by: 'Nurse Sumita',
-        is_verified: true,
-        donors: { full_name: 'Amit Kumar' }
-    },
-    {
-        id: '106',
-        donor_id: '3',
-        donation_date: subMonths(new Date(), 4).toISOString(),
-        units_donated: 1,
-        blood_group: 'B+',
-        donation_center: 'AIIMS Delhi',
-        collected_by: 'Dr. V. Gupta',
-        is_verified: true,
-        donors: { full_name: 'Amit Kumar' }
-    },
-    {
-        id: '107',
-        donor_id: '7', // Rohan
-        donation_date: subMonths(new Date(), 1).toISOString(),
-        units_donated: 1,
-        blood_group: 'AB+',
-        donation_center: 'Pune Blood Bank',
-        collected_by: 'Staff',
-        is_verified: true,
-        donors: { full_name: 'Rohan Mehta' }
-    },
-    {
-        id: '103',
-        donor_id: '2',
-        donation_date: subDays(new Date(), 5).toISOString(),
-        units_donated: 1,
-        blood_group: 'A+',
-        donation_center: 'Civil Hospital Ahmedabad',
-        collected_by: 'Dr. P. Shah',
-        is_verified: false, // Pending verification
-        donors: { full_name: 'Priya Patel' }
-    }
+    // Unverified / Pending (For Admin to Approve)
+    { id: 'p1', donor_id: 'd1', donation_date: subDays(new Date(), 1).toISOString(), units_donated: 1, blood_group: 'O+', donation_center: 'City Hospital', collected_by: 'Staff', is_verified: false, donors: { full_name: 'Aarav Patel' } },
+    { id: 'p2', donor_id: 'd3', donation_date: subDays(new Date(), 2).toISOString(), units_donated: 1, blood_group: 'B+', donation_center: 'Red Cross Camp', collected_by: 'Dr. Smith', is_verified: false, donors: { full_name: 'Ishaan Gupta' } },
+    { id: 'p3', donor_id: '2', donation_date: subDays(new Date(), 3).toISOString(), units_donated: 1, blood_group: 'A+', donation_center: 'Community Center', collected_by: 'Nurse Joy', is_verified: false, donors: { full_name: 'Priya Patel' } },
+
+    // Verified History
+    { id: '101', donor_id: '1', donation_date: subMonths(new Date(), 2).toISOString(), units_donated: 1, blood_group: 'O+', donation_center: 'Mumbai City Hospital', collected_by: 'Dr. A. Rao', is_verified: true, donors: { full_name: 'Rahul Sharma' } },
+    { id: '102', donor_id: '3', donation_date: subDays(new Date(), 20).toISOString(), units_donated: 1, blood_group: 'B+', donation_center: 'Delhi Red Cross', collected_by: 'Nurse Sumita', is_verified: true, donors: { full_name: 'Amit Kumar' } },
+    { id: '103', donor_id: '7', donation_date: subMonths(new Date(), 1).toISOString(), units_donated: 1, blood_group: 'AB+', donation_center: 'Pune Blood Bank', collected_by: 'Staff', is_verified: true, donors: { full_name: 'Rohan Mehta' } },
+    { id: '104', donor_id: '5', donation_date: subMonths(new Date(), 4).toISOString(), units_donated: 1, blood_group: 'O-', donation_center: 'Jaipur Hospital', collected_by: 'Dr. Singh', is_verified: true, donors: { full_name: 'Vikram Singh' } },
+    { id: '105', donor_id: '1', donation_date: subMonths(new Date(), 8).toISOString(), units_donated: 1, blood_group: 'O+', donation_center: 'Mumbai Camp', collected_by: 'Dr. Rao', is_verified: true, donors: { full_name: 'Rahul Sharma' } },
 ];
 
 const MOCK_REQUESTS: BloodRequest[] = [
-    {
-        id: 'req101',
-        requester_id: 'guest',
-        patient_name: 'Suresh Raina',
-        blood_group: 'B+',
-        units: 2,
-        reason: 'Emergency Surgery',
-        location: 'Apollo Hospital',
-        city: 'Chennai',
-        hospital: 'Apollo Hospital',
-        contact_number: '+91 98765 98765',
-        urgency: 'critical',
-        additional_notes: 'Urgent requirement for cardiac surgery.',
-        status: 'pending',
-        assigned_donor_id: null,
-        created_at: subDays(new Date(), 1).toISOString()
-    },
-    {
-        id: 'req102',
-        requester_id: 'guest',
-        patient_name: 'Meena Kumari',
-        blood_group: 'O-',
-        units: 1,
-        reason: 'Accident Case',
-        location: 'Max Hospital',
-        city: 'Delhi',
-        hospital: 'Max Hospital',
-        contact_number: '+91 87654 32109',
-        urgency: 'high',
-        additional_notes: 'Patient in ICU.',
-        status: 'approved',
-        assigned_donor_id: '5',
-        created_at: subDays(new Date(), 3).toISOString()
-    }
+    // Pending Requests (For Admin to Allocate)
+    { id: 'req1', requester_id: 'guest', patient_name: 'Suresh Raina', blood_group: 'B+', units: 2, reason: 'Emergency Surgery', location: 'Apollo Hospital', city: 'Chennai', hospital: 'Apollo Hospital', contact_number: '+91 98765 98765', urgency: 'critical', additional_notes: 'Urgent cardiac surgery.', status: 'pending', assigned_donor_id: null, created_at: subDays(new Date(), 0).toISOString() },
+    { id: 'req2', requester_id: 'guest', patient_name: 'Anita Desai', blood_group: 'A-', units: 1, reason: 'Low Hemoglobin', location: 'Fortis Hospital', city: 'Bangalore', hospital: 'Fortis', contact_number: '+91 88888 77777', urgency: 'high', additional_notes: 'Needed within 24 hours.', status: 'pending', assigned_donor_id: null, created_at: subDays(new Date(), 1).toISOString() },
+    { id: 'req3', requester_id: 'guest', patient_name: 'Raj Malhotra', blood_group: 'O-', units: 3, reason: 'Road Accident', location: 'Max Super Speciality', city: 'Delhi', hospital: 'Max Hospital', contact_number: '+91 77777 66666', urgency: 'critical', additional_notes: 'Patient in ICU.', status: 'pending', assigned_donor_id: null, created_at: subDays(new Date(), 1).toISOString() },
+
+    // History (Approved/Rejected)
+    { id: 'req4', requester_id: 'guest', patient_name: 'Meena Kumari', blood_group: 'O-', units: 1, reason: 'Accident Case', location: 'Max Hospital', city: 'Delhi', hospital: 'Max Hospital', contact_number: '+91 87654 32109', urgency: 'high', additional_notes: 'Resolved.', status: 'approved', assigned_donor_id: '5', created_at: subDays(new Date(), 3).toISOString() },
+    { id: 'req5', requester_id: 'guest', patient_name: 'Kabir Khan', blood_group: 'AB-', units: 1, reason: 'Dengue', location: 'City Care', city: 'Mumbai', hospital: 'City Care', contact_number: '+91 66666 55555', urgency: 'medium', additional_notes: '', status: 'rejected', assigned_donor_id: null, created_at: subDays(new Date(), 5).toISOString() },
 ];
 
 
@@ -326,22 +137,12 @@ const MOCK_REQUESTS: BloodRequest[] = [
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// In-Memory Storage (Resets on refresh, or upgrade to localStorage if persistence across refresh is needed for verify)
-// We'll use localStorage to simulate persistence over sessions for the user
-
-const loadStore = <T>(key: string, defaultData: T): T => {
-    try {
-        // Clear old mock data if needed or version it. For now, simple read.
-        // Actually, let's keep it memory-only for simplicity unless user refreshes. 
-        // GitHub Pages refresh loops might be annoying. Let's use memory for now to avoid complexity.
-        return defaultData;
-    } catch { return defaultData; }
-};
-
+// In-Memory Storage
 let inventoryStore = [...MOCK_INVENTORY];
 let donorsStore = [...MOCK_DONORS];
 let donationsStore = [...MOCK_DONATIONS];
 let requestsStore = [...MOCK_REQUESTS];
+let notificationsStore: any[] = []; // Store for notifications
 
 export const mockService = {
 
@@ -366,7 +167,6 @@ export const mockService = {
             };
         }
 
-        // Simple donor login match by email
         const donor = donorsStore.find(d => d.email === email);
         if (donor) {
             return {
@@ -381,9 +181,6 @@ export const mockService = {
                 }
             };
         }
-
-        // Generic "Success" for any demo user if we want low friction? 
-        // No, let's allow registration.
 
         throw new Error("Invalid credentials (try admin@bloodlife.com / admin)");
     },
@@ -547,7 +344,6 @@ export const mockService = {
     logDonation: async (data: any, userId: string) => {
         await delay(500);
         const user = donorsStore.find(d => d.id === userId.toString()); // Try to find user
-        // Simplify for demo
         const newDonation: Donation = {
             id: Math.random().toString(36).substr(2, 9),
             donor_id: userId,
