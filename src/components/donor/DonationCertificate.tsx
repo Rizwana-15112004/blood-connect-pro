@@ -76,9 +76,9 @@ export const DonationCertificate: React.FC<CertificateProps> = ({ donation }) =>
                 {/* Body */}
                 <div className="flex flex-col items-center gap-4 py-4">
                     <Award className="w-16 h-16 text-yellow-500 mb-2" />
-                    <h1 className="text-5xl font-bold italic text-slate-800 border-b-2 border-red-800 pb-2 px-8">Certificate of Recognition</h1>
+                    <h1 className="text-5xl font-bold italic text-slate-800 px-8">Certificate of Recognition</h1>
                     <p className="text-xl text-slate-600 mt-4">We proudly honor and appreciate the selfless contribution of</p>
-                    <h2 className="text-5xl font-bold text-red-900 my-4 border-b-2 border-slate-300 pb-2 px-4">{donorName}</h2>
+                    <h2 className="text-5xl font-bold text-red-900 my-4 px-4">{donorName}</h2>
                     <p className="text-lg text-slate-600 max-w-2xl leading-relaxed">
                         In recognition of your exceptional humanitarian service and dedication to saving lives by donating <span className="font-bold text-slate-800 text-2xl mx-1">{donation.units_donated} Unit(s)</span> of <span className="font-bold text-red-700 text-2xl mx-1">{donation.blood_group}</span> blood.
                     </p>
