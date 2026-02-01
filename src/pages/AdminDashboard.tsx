@@ -33,18 +33,17 @@ export default function AdminDashboard() {
 
     const fetchAdminData = async () => {
         try {
-            // Use mockService for consistent demo data across the app
-            const [paramRequests, unverifiedDonations, statsData, inventoryData, recentDonorsData] = await Promise.all([
-                mockService.getRequests(),
-                mockService.getUnverifiedDonations(),
-                mockService.getDashboardStats(),
-                mockService.getInventory(),
-                mockService.getRecentDonors()
+            const [paramRequests, unverifiedDonations, statsData, donorsData, inventoryData] = await Promise.all([
+                api.getRequests(),
+                api.getUnverifiedDonations(),
+                api.getDashboardStats(),
+                api.getDonors(),
+                api.getInventory()
             ]);
 
             setPendingRequestsCount(paramRequests.filter((r: any) => r.status === 'pending').length);
             setInventory(inventoryData);
-            setRecentDonors(recentDonorsData);
+            setRecentDonors(donorsData.slice(0, 5));
 
             if (statsData) {
                 setStats(statsData);

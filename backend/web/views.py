@@ -197,6 +197,17 @@ class AllocateDonorView(View):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
 
+class GetInventoryView(View):
+    def get(self, request):
+        inventory = Inventory.objects.all()
+        data = []
+        for item in inventory:
+            data.append({
+                'blood_group': item.blood_group,
+                'units_available': float(item.units_available)
+            })
+        return JsonResponse(data, safe=False)
+
 class RequestBloodView(View):
     def post(self, request):
         try:
@@ -307,6 +318,25 @@ class UpdateEligibilityView(View):
             return JsonResponse({'success': True, 'isEligible': profile.is_eligible})
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
+
+class GetDonorsView(View):
+    def get(self, request):
+        # Admin check
+        # if not request.user.is_staff: return JsonResponse({'error': 'Forbidden'}, status=403)
+        
+        donors = DonorProfile.objects.all().select_related('user')
+        data = []
+        for d in donors:
+            data.append({
+                'id': str(d.user.id),
+                'full_name': d.user.first_name or d.user.username,
+                'email': d.user.email,
+                'blood_group': d.blood_group,
+                'city': d.city,
+                'is_eligible': d.is_eligible,
+                'phone': d.phone
+            })
+        return JsonResponse(data, safe=False)
 
 class UserView(View):
     def get(self, request):

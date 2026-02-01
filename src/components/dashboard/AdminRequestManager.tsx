@@ -34,13 +34,19 @@ export function AdminRequestManager() {
     }, []);
 
     const loadData = async () => {
-        const [allRequests, allDonors] = await Promise.all([
-            mockService.getRequests(),
-            mockService.getDonors()
-        ]);
-        setRequests(allRequests);
-        setDonors(allDonors);
-        setLoading(false);
+        setLoading(true);
+        try {
+            const [allRequests, allDonors] = await Promise.all([
+                api.getRequests(),
+                api.getDonors()
+            ]);
+            setRequests(allRequests);
+            setDonors(allDonors);
+        } catch (error) {
+            console.error("Error loading admin data:", error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleStatusChange = async (id: string, status: 'approved' | 'rejected') => {

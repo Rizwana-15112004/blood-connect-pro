@@ -2,8 +2,17 @@
 import { mockService } from './mockService';
 
 // Environment Detection
-const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const isMockMode = !isLocal; // If on GitHub Pages (or any other host), force Mock Mode
+// Allow localhost, 127.0.0.1, and common local network IP patterns
+const isLocal =
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1' ||
+    window.location.hostname.startsWith('192.168.') ||
+    window.location.hostname.startsWith('10.') ||
+    window.location.hostname.endsWith('.gitpod.io') ||
+    window.location.hostname.endsWith('.github.dev');
+
+// Force Mock Mode ONLY on production static hosting (like GitHub Pages)
+const isMockMode = window.location.hostname.includes('github.io') || window.location.hostname.includes('netlify.app');
 
 // Helper to get CSRF token (only for Real Backend)
 const getCSRFToken = () => {
@@ -138,6 +147,16 @@ export const api = {
     getDashboardStats: async () => {
         if (isMockMode) return mockService.getStats();
         return fetchWithCSRF('/api/admin/stats/');
+    },
+
+    getInventory: async () => {
+        if (isMockMode) return mockService.getInventory();
+        return fetchWithCSRF('/api/get-inventory/');
+    },
+
+    getDonors: async () => {
+        if (isMockMode) return mockService.getDonors();
+        return fetchWithCSRF('/api/admin/donors/');
     },
 
     // Profile
