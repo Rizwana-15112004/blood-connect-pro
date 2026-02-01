@@ -244,13 +244,28 @@ class LoginView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
-            username = data.get('email', '').strip()
+            raw_username = data.get('email', '').strip()
             password = data.get('password')
-            print(f"LOGIN ATTEMPT: username=[{username}]")
-            user = authenticate(username=username, password=password)
-            print(f"AUTHENTICATE RESULT: {user}")
+            
+            print(f"--- LOGIN ATTEMPT ---")
+            print(f"Username provided: [{raw_username}]")
+            
+            # 1. Try direct authenticate
+            user = authenticate(username=raw_username, password=password)
+            
+            # 2. If fails and looks like email, try finding user by email first
+            if user is None and '@' in raw_username:
+                print(f"Direct auth failed. Searching for user with email: {raw_username}")
+                user_obj = User.objects.filter(email=raw_username).first()
+                if user_obj:
+                    print(f"Found user object: {user_obj.username}. Attempting auth with this username.")
+                    user = authenticate(username=user_obj.username, password=password)
+            
+            print(f"Final Auth Result: {user}")
+            
             if user is not None:
                 login(request, user)
+                print(f"Login successful for user: {user.username}")
                 # Fetch profile data
                 profile_data = {}
                 try:
@@ -261,8 +276,9 @@ class LoginView(View):
                         'phone': profile.phone,
                         'city': profile.city
                     }
-                except DonorProfile.DoesNotExist:
-                    profile_data = {'isEligible': False} # Default if missing
+                except Exception as e:
+                    print(f"Profile fetch failed: {e}")
+                    profile_data = {'isEligible': False} 
                     
                 return JsonResponse({
                     'user': {
@@ -272,6 +288,8 @@ class LoginView(View):
                         **profile_data
                     }
                 })
+            
+            print("Authentication failed.")
             return JsonResponse({'error': 'Invalid credentials'}, status=400)
         except Exception as e:
             return JsonResponse({'error': 'Request failed'}, status=400)
