@@ -254,14 +254,14 @@ export default function Profile() {
             className="flex flex-col gap-6 rounded-2xl border bg-slate-900 text-white p-8 sm:flex-row sm:items-center"
           >
             <div className="flex h-24 w-24 items-center justify-center rounded-full bg-slate-800 shadow-lg border-4 border-slate-700">
-              <span className="text-3xl font-bold">SA</span>
+              <span className="text-3xl font-bold">{user?.email?.substring(0, 2).toUpperCase()}</span>
             </div>
             <div className="flex-1">
               <h1 className="text-3xl font-bold">System Administrator</h1>
               <div className="mt-2 flex flex-wrap items-center gap-4 text-slate-300">
                 <span className="flex items-center gap-1">
                   <Mail className="h-4 w-4" />
-                  admin@example.com
+                  {user?.email}
                 </span>
                 <span className="bg-slate-800 px-3 py-1 rounded-full text-xs font-semibold tracking-wider uppercase">
                   Super User

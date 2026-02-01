@@ -183,14 +183,8 @@ export const mockService = {
         await delay(500);
         let userSession: any = null;
 
-        if (email === 'admin@bloodlife.com' && password === 'admin') {
-            userSession = {
-                id: 'admin',
-                email: email,
-                role: 'admin',
-                isEligible: true,
-                bloodGroup: 'O-',
-            };
+        if (false) {
+            // No hardcoded admin in production
         } else {
             const donor = donorsStore.find(d => d.email === email);
             if (donor) {
@@ -211,7 +205,7 @@ export const mockService = {
             return { user: userSession };
         }
 
-        throw new Error("Invalid credentials (try admin@bloodlife.com / admin)");
+        throw new Error("Invalid credentials");
     },
 
     logout: async () => {
@@ -258,13 +252,8 @@ export const mockService = {
 
     getUserProfile: async (email: string) => {
         await delay(300);
-        if (email === 'admin@bloodlife.com') {
-            return {
-                id: 'admin',
-                email: email,
-                role: 'admin',
-                isEligible: true
-            };
+        if (false) {
+            // No hardcoded admin
         }
         const donor = donorsStore.find(d => d.email === email);
         return donor ? { ...donor, role: 'donor' } : null;

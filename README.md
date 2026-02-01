@@ -59,10 +59,8 @@ Render is the easiest way to host this Django + React project for free.
 ### 5. Post-Deployment Setup
 Once the site is live:
 1. **Create Admin**: Go to your site URL + `/admin` (e.g., `yoursite.onrender.com/admin`).
-2. Login with the default credentials:
-   - **Email**: `admin@bloodlife.com`
-   - **Password**: `admin123`
-3. **Important**: Immediately change these in the "Users" section of the admin panel.
+2. Login with the **administrator account** you created during the initial setup or via the Django shell.
+3. **Security**: Ensure your administrator has a strong, unique password.
 
 ---
 
