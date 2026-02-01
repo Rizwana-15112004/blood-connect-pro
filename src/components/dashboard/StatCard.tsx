@@ -13,7 +13,7 @@ interface StatCardProps {
     label?: string;
   };
   description?: ReactNode;
-  variant?: 'default' | 'primary' | 'success' | 'warning';
+  variant?: 'default' | 'primary' | 'success' | 'warning' | 'destructive';
   className?: string;
 }
 
@@ -32,6 +32,7 @@ export function StatCard({
     primary: 'stat-card stat-card-primary',
     success: 'stat-card stat-card-success',
     warning: 'stat-card border-warning/30 bg-warning/5',
+    destructive: 'stat-card border-red-200 bg-red-50 dark:bg-red-900/10 dark:border-red-800',
   };
 
   const iconVariants = {
@@ -39,6 +40,7 @@ export function StatCard({
     primary: 'bg-white/20 text-white',
     success: 'bg-white/20 text-white',
     warning: 'bg-warning/20 text-warning',
+    destructive: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400',
   };
 
   return (

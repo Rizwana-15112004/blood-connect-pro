@@ -414,6 +414,7 @@ export const mockService = {
         return donationsStore.filter(d => d.donor_id === userId).map(d => ({
             id: d.id,
             units: d.units_donated,
+            units_donated: d.units_donated, // Fix for Chart compatibility (generate6MonthData expects units_donated)
             blood_group: d.blood_group,
             center: d.donation_center,
             donation_date: d.donation_date,

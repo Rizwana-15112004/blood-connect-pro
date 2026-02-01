@@ -302,8 +302,8 @@ export default function Dashboard() {
               ? (personalStats.isEligible ? 'You are clear to donate' : 'Based on health/date criteria')
               : 'Complete health checkup first'
             }
-            icon={<Droplets className="h-6 w-6 text-purple-500" />}
-            variant={hasCheckedEligibility ? (personalStats.isEligible ? 'success' : 'warning') : 'warning'}
+            icon={<Droplets className={hasCheckedEligibility && !personalStats.isEligible ? "h-6 w-6 text-red-500" : "h-6 w-6 text-purple-500"} />}
+            variant={hasCheckedEligibility ? (personalStats.isEligible ? 'success' : 'destructive') : 'warning'}
             description={
               <div className="flex flex-col gap-1 mt-1">
                 {!hasCheckedEligibility && (
