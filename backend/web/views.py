@@ -247,25 +247,19 @@ class LoginView(View):
             raw_username = data.get('email', '').strip()
             password = data.get('password')
             
-            print(f"--- LOGIN ATTEMPT ---")
-            print(f"Username provided: [{raw_username}]")
             
             # 1. Try direct authenticate
             user = authenticate(username=raw_username, password=password)
             
             # 2. If fails and looks like email, try finding user by email first
             if user is None and '@' in raw_username:
-                print(f"Direct auth failed. Searching for user with email: {raw_username}")
                 user_obj = User.objects.filter(email=raw_username).first()
                 if user_obj:
-                    print(f"Found user object: {user_obj.username}. Attempting auth with this username.")
                     user = authenticate(username=user_obj.username, password=password)
             
-            print(f"Final Auth Result: {user}")
             
             if user is not None:
                 login(request, user)
-                print(f"Login successful for user: {user.username}")
                 # Fetch profile data
                 profile_data = {}
                 try:
@@ -277,7 +271,6 @@ class LoginView(View):
                         'city': profile.city
                     }
                 except Exception as e:
-                    print(f"Profile fetch failed: {e}")
                     profile_data = {'isEligible': False} 
                     
                 return JsonResponse({
@@ -289,7 +282,6 @@ class LoginView(View):
                     }
                 })
             
-            print("Authentication failed.")
             return JsonResponse({'error': 'Invalid credentials'}, status=400)
         except Exception as e:
             return JsonResponse({'error': 'Request failed'}, status=400)
