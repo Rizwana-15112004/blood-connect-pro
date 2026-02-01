@@ -225,8 +225,6 @@ class LoginView(View):
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
-            if user is not None:
-                login(request, user)
                 # Fetch profile data
                 profile_data = {}
                 try:
@@ -264,7 +262,6 @@ class RegisterView(View):
             
             user = User.objects.create_user(username=email, email=email, password=password)
             login(request, user)
-            user = User.objects.create_user(username=email, email=email, password=password)
             
             # Create Donor Profile
             DonorProfile.objects.create(user=user, is_eligible=False)

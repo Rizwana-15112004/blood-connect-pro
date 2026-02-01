@@ -106,8 +106,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ email, password, isEligible }),
       });
 
-      if (!res.ok) throw new Error("API Error");
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Server Error: Unable to register. Please check internet connection or server status.");
+      }
+
       const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Registration Failed");
+
       setUser(data.user);
       return { error: null };
     } catch (error: any) {
@@ -122,10 +128,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ email, password }),
       });
 
-      // Validating response is JSON before parsing
       const contentType = res.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("Not JSON");
+        // Backend is likely returning HTML (500, 404, or 502)
+        // Or server is offline/unreachable if Vite proxy returns error.
+        console.error("Non-JSON response from server during login:", res.status, res.statusText);
+        throw new Error("Cannot connect to server. Please ensure the backend is running via ./run.sh");
       }
 
       const data = await res.json();
