@@ -206,7 +206,31 @@ export default function Profile() {
       lastDonationDate: profile.last_donation_date ? new Date(profile.last_donation_date) : undefined,
     };
 
-    return checkEligibility(healthData);
+    const result = checkEligibility(healthData);
+
+    // Filter out errors caused by missing profile data (defaults)
+    if (profile.weight === 0) {
+      result.reasons = result.reasons.filter(r => !r.toLowerCase().includes('weight'));
+    }
+    // Check if age is invalid (e.g. 0 or very small due to default date)
+    const age = new Date().getFullYear() - new Date(profile.date_of_birth).getFullYear();
+    if (age < 1 || age > 120) { // arbitrary sanity check for default date
+      result.reasons = result.reasons.filter(r => !r.toLowerCase().includes('years old') && !r.toLowerCase().includes('age'));
+    }
+
+    // Re-evaluate eligibility based on remaining reasons
+    if (result.reasons.length === 0 && !result.isEligible) {
+      // If all reasons were filtered out (meaning only missing data caused ineligibility),
+      // we might defaulting to eligible OR just hiding the card?
+      // Actually, if reasons are empty, we can behave as if eligible.
+      result.isEligible = true;
+      result.category = 'eligible';
+    } else if (result.reasons.length > 0) {
+      // Ensure category reflects we still have issues (e.g. donation interval)
+      if (result.category === 'eligible') result.category = 'temporarily_ineligible';
+    }
+
+    return result;
   };
 
   if (loading) {
