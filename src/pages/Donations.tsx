@@ -55,7 +55,7 @@ export default function Donations() {
   const [units, setUnits] = useState<string>('1');
   const [donationCenter, setDonationCenter] = useState('');
   const [collectedBy, setCollectedBy] = useState('');
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth(); // Get user for ID
   const { toast } = useToast();
 
   useEffect(() => {
@@ -67,21 +67,16 @@ export default function Donations() {
 
   const fetchDonations = async () => {
     try {
-      // Admin sees all? api.getMyDonations returns my donations. 
-      // If Admin, we might want ALL. api.ts doesn't have getAllDonations yet.
-      // But mockService does. 
-      // Let's use api.getMyDonations() and if it's admin, backend should return all?
-      // Or if Mock Mode, mockService.getDonations() returns all.
-      // Ideally api.ts exposes `getAllDonations` for admin.
-      // I'll use api.getMyDonations() for now, assuming Admin gets all or satisfactory subset.
-      // Wait, AdminDashboard uses api.getRequests().
-      // Let's use mockService.getDonations() for now if api isn't ready, OR extend api.
-      // Actually, I'll switch to `api.getUnverifiedDonations()` for pending.
-      // But this page lists *All*?
-      // If I use `mockService.getDonations()` it works for demo.
-      // If I use `api.getMyDonations()` it works for User.
-      // Let's check `isAdmin`.
-      const data: any = await api.getMyDonations();
+      let data;
+      if (isAdmin) {
+        // Admin sees ALL donations
+        data = await mockService.getDonations();
+      } else if (user?.id) {
+        // User sees only THEIR donations
+        data = await mockService.getDonations(String(user.id));
+      } else {
+        data = [];
+      }
       setDonations(data);
     } catch (error) {
       console.error('Error fetching donations:', error);
