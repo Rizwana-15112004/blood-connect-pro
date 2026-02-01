@@ -47,14 +47,22 @@ function DonationLogDialog({ onDonationSuccess, userBloodGroup }: { onDonationSu
       const data = await api.logDonation({ units, center, bloodGroup: userBloodGroup }, user ? String(user.id) : '');
 
       if (data.success && data.donation) {
-        setLastRecordedDonation(data.donation);
-        toast({
-          title: "Donation Logged!",
-          description: "Thank you for your donation. Your records have been updated.",
-          className: "bg-green-600 text-white border-none"
-        });
+        if (data.donation.is_verified) {
+          setLastRecordedDonation(data.donation);
+          toast({
+            title: "Donation Logged!",
+            description: "Thank you for your donation. Your records have been updated.",
+            className: "bg-green-600 text-white border-none"
+          });
+        } else {
+          toast({
+            title: "Donation Recorded",
+            description: "Your donation is pending verification from the admin.",
+          });
+          setIsOpen(false); // Close dialog since we won't show certificate
+        }
         onDonationSuccess();
-        // Don't close immediately, keep certificate open
+        // Don't close immediately if we are showing certificate
       } else {
         throw new Error("Failed to log donation");
       }

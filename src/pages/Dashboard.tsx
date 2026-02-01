@@ -78,11 +78,19 @@ export default function Dashboard() {
         });
 
         if (res.success && res.donation) {
-          setLastRecordedDonation(res.donation);
-          toast({
-            title: "Donation Recorded",
-            description: "Thank you! Your stats have been updated. You can now download your new certificate.",
-          });
+          if (res.donation.is_verified) {
+            setLastRecordedDonation(res.donation);
+            toast({
+              title: "Donation Recorded",
+              description: "Thank you! Your stats have been updated. You can now download your new certificate.",
+            });
+          } else {
+            toast({
+              title: "Donation Pending Verification",
+              description: "Thank you! Your donation has been recorded and will be verified by the admin. Your certificate will be available once verified.",
+              variant: "default"
+            });
+          }
         }
 
         fetchDashboardData();
