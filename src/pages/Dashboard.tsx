@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Users, Droplets, Activity, TrendingUp, Heart, Calendar as CalendarIcon } from 'lucide-react';
+import { Users, Droplets, Activity, TrendingUp, Heart, Calendar as CalendarIcon, Mail } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { BloodGroupDonutChart } from '@/components/dashboard/BloodGroupDonutChart';
@@ -130,13 +130,20 @@ export default function Dashboard() {
   const [inventoryState, setInventoryState] = useState<BloodInventoryItem[]>([]);
   const [monthlyDonations, setMonthlyDonations] = useState<MonthlyDonation[]>([]);
   const [recentDonors, setRecentDonors] = useState<RecentDonor[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
 
   useEffect(() => {
     fetchDashboardData();
     if (!isAdmin && user) {
       fetchPersonalStats();
+      fetchNotifications();
     }
   }, [isAdmin, user]);
+
+  const fetchNotifications = async () => {
+    const msgs = await mockService.getNotifications(String(user?.id));
+    setNotifications(msgs);
+  };
 
   const fetchDashboardData = async () => {
     try {
@@ -288,6 +295,34 @@ export default function Dashboard() {
           </div>
           {/* Removed RecentDonorsList for Donor View */}
         </div>
+
+        {/* Inbox / Notifications Section */}
+        {!isAdmin && notifications.length > 0 && (
+          <div className="rounded-xl border bg-card p-6 shadow-sm">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600">
+                <Mail className="h-4 w-4" />
+              </div>
+              <h2 className="text-xl font-bold">My Inbox & Alerts</h2>
+              <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+                {notifications.filter(n => !n.read).length} New
+              </span>
+            </div>
+            <div className="space-y-3 max-h-[300px] overflow-y-auto">
+              {notifications.map((notif: any) => (
+                <div key={notif.id} className={`p-4 rounded-lg border ${notif.read ? 'bg-muted/30' : 'bg-blue-50/50 dark:bg-blue-900/10 border-blue-100'}`}>
+                  <div className="flex justify-between items-start mb-1">
+                    <h4 className="font-semibold text-foreground">{notif.title}</h4>
+                    <span className="text-xs text-muted-foreground">{format(new Date(notif.date), 'MMM d, h:mm a')}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground whitespace-pre-line">
+                    {notif.message}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Requests Section */}
         <BloodRequestSection userId={user?.id || ''} />
