@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Users, Droplets, Activity, TrendingUp, Heart, Calendar as CalendarIcon, Mail } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
@@ -47,6 +48,7 @@ interface MonthlyDonation {
 export default function Dashboard() {
   const { isAdmin, user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSelfReportDonation = async () => {
     if (!window.confirm("Confirm that you donated blood today? This will update your records.")) return;
@@ -225,7 +227,7 @@ export default function Dashboard() {
         <div className="dashboard-grid">
           <StatCard
             title={isAdmin ? "Total Donations" : "My Total Donations"}
-            value={isAdmin ? stats.totalDonations : personalStats.totalDonations}
+            value={isAdmin ? stats.totalDonations : (personalStats.totalDonations || 0)} // show 0 if undefined/null
             subtitle="Units donated"
             icon={<Heart className="h-6 w-6 text-red-500" />}
             variant="primary"
@@ -255,12 +257,13 @@ export default function Dashboard() {
             description={
               <div className="flex flex-col gap-1 mt-1">
                 {!hasCheckedEligibility && (
-                  <button
-                    onClick={handleCheckEligibility}
-                    className="text-xs text-blue-600 hover:text-blue-800 underline font-medium mt-1"
+                  <Button
+                    variant="link"
+                    className="text-xs text-blue-600 hover:text-blue-800 underline font-medium mt-1 h-auto p-0"
+                    onClick={() => navigate('/eligibility')}
                   >
                     Check Eligibility Now
-                  </button>
+                  </Button>
                 )}
                 {hasCheckedEligibility && personalStats.isEligible && (
                   <Button

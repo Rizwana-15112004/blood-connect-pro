@@ -561,175 +561,158 @@ export const mockService = {
         }
         // Fallback for admin updates
         if (userId === 'admin') {
-            return { success: true };
-        },
+            return { success: true, isEligible: true };
+        }
+        return { success: true };
+    },
 
-        // --- NOTIFICATIONS ---
-        export interface Notification {
-            id: string;
-            userId: string;
-            title: string;
-            message: string;
-            date: string;
-            read: boolean;
-            type: 'email' | 'system';
+    // --- NOTIFICATIONS & MESSAGING ---
+
+    getNotifications: async (userId: string) => {
+        await delay(300);
+        return notificationsStore.filter(n => n.userId === userId).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    },
+
+    markNotificationRead: async (id: string) => {
+        const notif = notificationsStore.find(n => n.id === id);
+        if (notif) notif.read = true;
+        return { success: true };
+    },
+
+    // --- UPDATED REQUEST LOGIC ---
+
+    updateRequestStatus: async (requestId: string, status: 'approved' | 'rejected', donorId?: string) => {
+        await delay(500);
+        const req = requestsStore.find(r => r.id === requestId);
+        if (req) {
+            req.status = status;
+            if (donorId) {
+                req.assigned_donor_id = donorId;
+
+                // Trigger "Email" Notification to Requester
+                const donor = donorsStore.find(d => d.id === donorId);
+                const message = `Good news! We have found a matching donor for your request (Patient: ${req.patient_name}).
+
+Donor Details:
+Name: ${donor?.full_name}
+Blood Group: ${donor?.blood_group}
+Contact: ${donor?.phone}
+Location: ${donor?.city}
+
+Please contact them immediately.`;
+
+                notificationsStore.unshift({
+                    id: Math.random().toString(36).substr(2, 9),
+                    userId: req.requester_id,
+                    title: 'Donor Assigned - Action Required',
+                    message: message,
+                    date: new Date().toISOString(),
+                    read: false,
+                    type: 'email'
+                });
+            } else if (status === 'rejected') {
+                notificationsStore.unshift({
+                    id: Math.random().toString(36).substr(2, 9),
+                    userId: req.requester_id,
+                    title: 'Update on your Blood Request',
+                    message: `We regret to inform you that your request for ${req.patient_name} could not be fulfilled at this time. Please try other sources or contact support.`,
+                    date: new Date().toISOString(),
+                    read: false,
+                    type: 'email'
+                });
+            }
+        }
+        return { success: true };
+    },
+
+    // --- MISSING METHODS ADDED FOR CONSISTENCY ---
+
+    getInventory: async () => {
+        await delay(300);
+        return inventoryStore;
+    },
+
+    getDashboardStats: async () => {
+        // Re-use getStats logic
+        return await mockService.getStats();
+    },
+
+    getProfile: async (email: string) => {
+        return await mockService.getUserProfile(email);
+    },
+
+    addDonation: async (data: any) => {
+        await delay(500);
+        // Find donor to update stats
+        const donor = donorsStore.find(d => d.id === data.donor_id);
+        const newDonation: Donation = {
+            id: Math.random().toString(36).substr(2, 9),
+            donor_id: data.donor_id,
+            donation_date: data.donation_date || new Date().toISOString(),
+            units_donated: data.units_donated || 1,
+            blood_group: data.blood_group || (donor?.blood_group || 'O+'),
+            donation_center: data.donation_center || 'Main Center',
+            collected_by: data.collected_by || 'Staff',
+            is_verified: false
+        };
+        donationsStore.unshift(newDonation);
+
+        // UPDATE DONOR STATS
+        if (donor) {
+            donor.total_donations += 1;
+            donor.last_donation_date = newDonation.donation_date;
         }
 
-        let notificationsStore: Notification[] = [
-            {
-                id: 'n1',
-                userId: '1',
-                title: 'Welcome to BloodLife',
-                message: 'Thank you for registering as a donor. You can now track your donations and eligibility.',
-                date: subMonths(new Date(), 24).toISOString(),
-                read: true,
-                type: 'email'
-            }
-        ];
+        return { success: true };
+    },
 
-        getDonors: async () => {
-            await delay(500);
-            return donorsStore;
-        },
+    getRecentDonors: async () => {
+        await delay(300);
+        return donorsStore
+            .sort((a, b) => new Date(b.registered_at).getTime() - new Date(a.registered_at).getTime())
+            .slice(0, 5)
+            .map(d => ({
+                id: d.id,
+                fullName: d.full_name,
+                bloodGroup: d.blood_group,
+                registeredAt: d.registered_at
+            }));
+    },
 
-            // --- NOTIFICATIONS & MESSAGING ---
+    getDonations: async (userId?: string) => {
+        await delay(400);
+        let data = donationsStore;
+        if (userId) {
+            data = data.filter(d => d.donor_id === userId);
+        }
+        return data.sort((a, b) => new Date(b.donation_date).getTime() - new Date(a.donation_date).getTime());
+    },
 
-            getNotifications: async (userId: string) => {
-                await delay(300);
-                return notificationsStore.filter(n => n.userId === userId).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-            },
+    getUpcomingDonations: async () => {
+        await delay(300);
+        // Mock upcoming donations from random eligible donors
+        const eligible = donorsStore.filter(d => d.is_eligible).slice(0, 3);
+        return eligible.map((d, i) => ({
+            id: `up-${i}`,
+            date: format(new Date(Date.now() + (i + 1) * 86400000 * 3), 'yyyy-MM-dd'),
+            location: d.city || 'City Hospital',
+            donorName: d.full_name,
+            bloodGroup: d.blood_group
+        }));
+    },
 
-                markNotificationRead: async (id: string) => {
-                    const notif = notificationsStore.find(n => n.id === id);
-                    if (notif) notif.read = true;
-                    return { success: true };
-                },
-
-                    // --- UPDATED REQUEST LOGIC ---
-
-                    updateRequestStatus: async (requestId: string, status: 'approved' | 'rejected', donorId?: string) => {
-                        await delay(500);
-                        const req = requestsStore.find(r => r.id === requestId);
-                        if (req) {
-                            req.status = status;
-                            if (donorId) {
-                                req.assigned_donor_id = donorId;
-
-                                // Trigger "Email" Notification to Requester
-                                const donor = donorsStore.find(d => d.id === donorId);
-                                const message = `Good news! We have found a matching donor for your request (Patient: ${req.patient_name}).
-                
-                Donor Details:
-                Name: ${donor?.full_name}
-                Blood Group: ${donor?.blood_group}
-                Contact: ${donor?.phone}
-                Location: ${donor?.city}
-                
-                Please contact them immediately.`;
-
-                                notificationsStore.unshift({
-                                    id: Math.random().toString(36).substr(2, 9),
-                                    userId: req.requester_id,
-                                    title: 'Donor Assigned - Action Required',
-                                    message: message,
-                                    date: new Date().toISOString(),
-                                    read: false,
-                                    type: 'email'
-                                });
-                            } else if (status === 'rejected') {
-                                notificationsStore.unshift({
-                                    id: Math.random().toString(36).substr(2, 9),
-                                    userId: req.requester_id,
-                                    title: 'Update on your Blood Request',
-                                    message: `We regret to inform you that your request for ${req.patient_name} could not be fulfilled at this time. Please try other sources or contact support.`,
-                                    date: new Date().toISOString(),
-                                    read: false,
-                                    type: 'email'
-                                });
-                            }
-                        }
-                        return { success: true };
-                    },
-
-                        // --- MISSING METHODS ADDED FOR CONSISTENCY ---
-
-                        getInventory: async () => {
-                        },
-
-                            getDashboardStats: async () => {
-                                // Re-use getStats logic
-                                return await mockService.getStats();
-                            },
-
-                                getProfile: async (email: string) => {
-                                    return await mockService.getUserProfile(email);
-                                },
-
-                                    addDonation: async (data: any) => {
-                                        // Re-use logDonation logic but adapt args if needed
-                                        // Dashboard calls: addDonation({ donor_id, ... })
-                                        const user = donorsStore.find(d => d.id === data.donor_id);
-                                        const newDonation: Donation = {
-                                            id: Math.random().toString(36).substr(2, 9),
-                                            donor_id: data.donor_id,
-                                            donation_date: data.donation_date || new Date().toISOString(),
-                                            units_donated: data.units_donated || 1,
-                                            blood_group: data.blood_group || (user?.blood_group || 'O+'),
-                                            donation_center: data.donation_center || 'Main Center',
-                                            collected_by: data.collected_by || 'Staff',
-                                            is_verified: false
-                                        };
-                                        donationsStore.unshift(newDonation);
-                                        return { success: true };
-                                    },
-
-                                        getRecentDonors: async () => {
-                                            await delay(300);
-                                            return donorsStore
-                                                .sort((a, b) => new Date(b.registered_at).getTime() - new Date(a.registered_at).getTime())
-                                                .slice(0, 5)
-                                                .map(d => ({
-                                                    id: d.id,
-                                                    fullName: d.full_name,
-                                                    bloodGroup: d.blood_group,
-                                                    registeredAt: d.registered_at
-                                                }));
-                                        },
-
-                                            getDonations: async (userId?: string) => {
-                                                await delay(400);
-                                                let data = donationsStore;
-                                                if (userId) {
-                                                    data = data.filter(d => d.donor_id === userId);
-                                                }
-                                                return data;
-                                            },
-
-                                                getUpcomingDonations: async () => {
-                                                    await delay(300);
-                                                    // Mock upcoming donations from random eligible donors
-                                                    const eligible = donorsStore.filter(d => d.is_eligible).slice(0, 3);
-                                                    return eligible.map((d, i) => ({
-                                                        id: `up-${i}`,
-                                                        date: format(new Date(Date.now() + (i + 1) * 86400000 * 3), 'yyyy-MM-dd'),
-                                                        location: d.city || 'City Hospital',
-                                                        donorName: d.full_name,
-                                                        bloodGroup: d.blood_group
-                                                    }));
-                                                },
-
-                                                    addDonor: async (data: any) => {
-                                                        await delay(500);
-                                                        const newDonor: Donor = {
-                                                            id: Math.random().toString(36).substr(2, 9),
-                                                            ...data,
-                                                            role: 'donor',
-                                                            is_eligible: true,
-                                                            total_donations: 0,
-                                                            last_donation_date: null,
-                                                            registered_at: new Date().toISOString()
-                                                        };
-                                                        donorsStore.unshift(newDonor);
-                                                        return newDonor;
-                                                    }
-    };
+    addDonor: async (data: any) => {
+        await delay(500);
+        const newDonor: Donor = {
+            id: Math.random().toString(36).substr(2, 9),
+            ...data,
+            role: 'donor',
+            is_eligible: true,
+            total_donations: 0,
+            last_donation_date: null,
+            registered_at: new Date().toISOString()
+        };
+        donorsStore.unshift(newDonor);
+        return newDonor;
+    }
+};
