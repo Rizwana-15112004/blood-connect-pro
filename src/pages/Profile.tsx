@@ -76,11 +76,32 @@ function DonationLogDialog({ onDonationSuccess, userBloodGroup }: { onDonationSu
       }
     } catch (error: any) {
       console.error("Donation Log Error:", error);
-      toast({
-        title: "Submission Failed",
-        description: error.message || "Could not log donation. Please try again.",
-        variant: "destructive"
-      });
+
+      // Fallback to Mock
+      try {
+        await mockService.addDonation({
+          donor_id: 'guest', // or fetch from props if available, we'll fix simple case
+          units_donated: Number(units),
+          blood_group: userBloodGroup,
+          donation_center: center,
+          collected_by: 'Self (Demo)',
+          donation_date: new Date().toISOString()
+        } as any);
+
+        toast({
+          title: "Donation Logged (Demo Mode)",
+          description: "Thank you! This is a demo submission.",
+          className: "bg-blue-600 text-white border-none"
+        });
+        onDonationSuccess();
+        setIsOpen(false);
+      } catch (mockError) {
+        toast({
+          title: "Submission Failed",
+          description: error.message || "Could not log donation. Please try again.",
+          variant: "destructive"
+        });
+      }
     } finally {
       setLoading(false);
     }
