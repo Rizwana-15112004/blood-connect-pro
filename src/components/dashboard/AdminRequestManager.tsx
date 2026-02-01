@@ -147,7 +147,7 @@ export function AdminRequestManager() {
                             <div key={req.id} className={`p-4 flex items-center justify-between ${idx !== 0 ? 'border-t' : ''}`}>
                                 <div>
                                     <p className="font-medium">{req.patient_name}</p>
-                                    <p className="text-xs text-muted-foreground">{format(new Date(req.request_date), 'MMM d')} • {req.location}</p>
+                                    <p className="text-xs text-muted-foreground">{format(new Date(req.created_at || new Date()), 'MMM d')} • {req.location}</p>
                                 </div>
                                 <div className="text-right">
                                     <Badge variant={req.status === 'approved' ? 'default' : 'destructive'} className={req.status === 'approved' ? 'bg-green-600' : ''}>

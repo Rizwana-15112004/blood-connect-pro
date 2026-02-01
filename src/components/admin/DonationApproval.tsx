@@ -4,19 +4,18 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { api } from '@/services/api';
+import { mockService } from '@/services/mockService';
 
 interface PendingDonation {
-    id: number;
+    id: string; // Updated to string to match mockService
     donor_name: string;
-    units: string;
+    units: number; // Updated to number
     blood_group: string;
     center: string;
     date: string;
 }
 
 export function DonationApproval() {
-    const [startFetch, setStartFetch] = useState(false);
     const [donations, setDonations] = useState<PendingDonation[]>([]);
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
@@ -27,7 +26,8 @@ export function DonationApproval() {
 
     const fetchPendingDonations = async () => {
         try {
-            const data = await api.getUnverifiedDonations();
+            const data = await mockService.getUnverifiedDonations();
+            // Map mock service data to component state if helpful, but they match well enough now
             setDonations(data);
         } catch (error) {
             console.error('Error fetching pending donations:', error);
@@ -36,9 +36,9 @@ export function DonationApproval() {
         }
     };
 
-    const handleAction = async (donationId: number, action: 'approve' | 'reject') => {
+    const handleAction = async (donationId: string, action: 'approve' | 'reject') => {
         try {
-            const res = await api.verifyDonation(donationId.toString(), action);
+            const res = await mockService.verifyDonation(donationId, action);
 
             if (res.success) {
                 toast({
