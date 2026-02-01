@@ -18,7 +18,7 @@ export function BloodSearchSection() {
     const [location, setLocation] = useState('');
     const [loading, setLoading] = useState(false);
     const [results, setResults] = useState<any[] | null>(null);
-    const [expandedDonorId, setExpandedDonorId] = useState<string | null>(null);
+
     const { toast } = useToast();
 
     const handleSearch = async (e: React.FormEvent) => {
@@ -143,7 +143,7 @@ export function BloodSearchSection() {
                                 </div>
                             </div>
 
-                            {/* Donor List with Contact Details */}
+                            {/* Donor List without Contact Details */}
                             {result.donorsList && result.donorsList.length > 0 && (
                                 <div className="md:col-span-2 space-y-3 mt-4">
                                     <h3 className="font-semibold text-lg">Available Donors</h3>
@@ -153,27 +153,21 @@ export function BloodSearchSection() {
                                                 <p className="font-medium">{donor.full_name}</p>
                                                 <p className="text-sm text-muted-foreground">{donor.city}, {donor.state}</p>
                                             </div>
-                                            {/* Show Contact Button or Details */}
-                                            {expandedDonorId === donor.id ? (
-                                                <div className="flex flex-col gap-1 text-sm text-right">
-                                                    <a href={`tel:${donor.phone}`} className="text-primary font-medium hover:underline flex items-center justify-end gap-1">
-                                                        📞 {donor.phone}
-                                                    </a>
-                                                    <a href={`mailto:${donor.email}`} className="text-muted-foreground hover:underline flex items-center justify-end gap-1">
-                                                        ✉️ {donor.email}
-                                                    </a>
-                                                </div>
-                                            ) : (
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={() => setExpandedDonorId(donor.id)}
-                                                >
-                                                    Contact Donor
-                                                </Button>
-                                            )}
+                                            <Button
+                                                size="sm"
+                                                variant="secondary"
+                                                onClick={() => window.location.href = '/request-blood'}
+                                            >
+                                                Request Blood
+                                            </Button>
                                         </div>
                                     ))}
+                                    <div className="mt-4 p-4 bg-muted/50 rounded-lg text-center">
+                                        <p className="text-sm text-muted-foreground mb-2">
+                                            To protect donor privacy, we do not share contact details directly.
+                                            Please submit a request, and an admin will connect you with a donor.
+                                        </p>
+                                    </div>
                                 </div>
                             )}
 

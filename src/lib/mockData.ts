@@ -529,12 +529,29 @@ export const mockService = {
 
     // Blood Request Methods
     getRequests: async (userId?: string) => {
-        await delay(300);
-        let data = [...requestsStore];
-        if (userId) {
-            data = data.filter(r => r.requester_id === userId);
+        try {
+            const response = await fetch('/api/all-requests');
+            if (!response.ok) throw new Error('Failed to fetch requests');
+            let data = await response.json();
+            // Backend returns lowercase status, capitalized is needed for UI consistency if used elsewhere, 
+            // but AdminRequestManager lowercases it in some checks? No, checks are string literals 'pending'.
+            // Ensure data shape matches BloodRequest interface
+            return data.map((r: any) => ({
+                id: r.id.toString(),
+                requester_id: r.requester_id || 'guest',
+                patient_name: r.patient_name,
+                blood_group: r.blood_group,
+                units: r.units,
+                reason: r.reason || '',
+                location: r.location,
+                status: r.status,
+                assigned_donor_id: r.assigned_donor_id,
+                request_date: r.request_date
+            }));
+        } catch (error) {
+            console.error("API Fetch Error", error);
+            return requestsStore; // Fallback to mock if API fails (or for dev without backend running)
         }
-        return data.sort((a, b) => new Date(b.request_date).getTime() - new Date(a.request_date).getTime());
     },
 
     addRequest: async (request: Omit<BloodRequest, 'id' | 'status' | 'request_date' | 'assigned_donor_id'>) => {
@@ -551,15 +568,28 @@ export const mockService = {
     },
 
     updateRequestStatus: async (id: string, status: 'approved' | 'rejected' | 'pending', assignedDonorId?: string) => {
-        await delay(400);
-        const req = requestsStore.find(r => r.id === id);
-        if (req) {
-            req.status = status;
-            if (assignedDonorId) {
-                req.assigned_donor_id = assignedDonorId;
+        try {
+            const response = await fetch('/api/allocate-donor', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    requestId: id,
+                    status: status,
+                    donorId: assignedDonorId
+                })
+            });
+            if (!response.ok) throw new Error('Failed to update status');
+            // Update local store for UI reactivity if needed, or rely on re-fetch
+            const req = requestsStore.find(r => r.id === id);
+            if (req) {
+                req.status = status;
+                if (assignedDonorId) req.assigned_donor_id = assignedDonorId;
             }
+            return req;
+        } catch (error) {
+            console.error("API Update Error", error);
+            return null;
         }
-        return req;
     }
 };
 

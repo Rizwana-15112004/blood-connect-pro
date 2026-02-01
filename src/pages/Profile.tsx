@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, Mail, Phone, MapPin, Droplets, Heart, Calendar, Activity } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Droplets, Heart, Calendar, Activity, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { StatCard } from '@/components/dashboard/StatCard';
@@ -14,6 +14,92 @@ import { mockService, Donor } from '@/lib/mockData';
 import { useAuth } from '@/hooks/useAuth';
 import { checkEligibility, DonorHealthData, getBloodGroupCompatibility } from '@/lib/eligibility';
 import { format, subMonths } from 'date-fns';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
+
+function DonationLogDialog({ onDonationSuccess }: { onDonationSuccess: () => void }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [units, setUnits] = useState('1');
+  const [center, setCenter] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/donate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ units, center, bloodGroup: 'O+' }) // TODO: Fetch real blood group from user context
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Donation Logged!",
+          description: "Thank you for your donation. Your records have been updated.",
+          className: "bg-green-600 text-white border-none"
+        });
+        onDonationSuccess();
+        setIsOpen(false);
+      } else {
+        throw new Error("Failed to log donation");
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Could not log donation. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button className="gap-2 bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-200">
+          <Plus className="h-4 w-4" />
+          I Donated Today
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Log Your Donation</DialogTitle>
+          <DialogDescription>
+            Thank you for saving lives! Please enter the details below.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label htmlFor="units">Units Donated</Label>
+            <Input id="units" type="number" step="0.5" value={units} onChange={e => setUnits(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="center">Donation Center</Label>
+            <Input id="center" placeholder="e.g. City Hospital" value={center} onChange={e => setCenter(e.target.value)} />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
+          <Button onClick={handleSubmit} disabled={loading}>
+            {loading ? 'Saving...' : 'Confirm Donation'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 // interface DonorProfile ... (Removed, imported from mockData)
 
@@ -200,13 +286,14 @@ export default function Profile() {
                 </span>
               )}
             </div>
-            <div className="mt-4">
+            <div className="mt-4 flex gap-2">
               <Link to="/eligibility">
                 <Button variant="outline" size="sm" className="gap-2 border-primary/20 hover:bg-primary/5 text-primary">
                   <Activity className="h-4 w-4" />
                   Check Eligibility
                 </Button>
               </Link>
+              <DonationLogDialog onDonationSuccess={fetchProfile} userBloodGroup={profile.blood_group} />
             </div>
           </div>
           <BloodGroupBadge bloodGroup={profile.blood_group} size="lg" />

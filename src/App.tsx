@@ -16,6 +16,7 @@ import CalendarPage from "./pages/CalendarPage";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import RequestBlood from "./pages/RequestBlood";
 import { ProtectedRoute } from "./components/layout/ProtectedRoute";
 import { AdminRoute } from "./components/layout/AdminRoute";
 import { PageTransition } from "./components/layout/PageTransition";
@@ -35,6 +36,7 @@ const AnimatedRoutes = () => {
     <Routes>
       <Route path="/" element={<PageTransition><Index /></PageTransition>} />
       <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
+      <Route path="/request-blood" element={<PageTransition><RequestBlood /></PageTransition>} />
 
       {/* Protected User Routes */}
       <Route path="/dashboard" element={

@@ -56,6 +56,12 @@ export default function Index() {
                     Check Eligibility
                   </Button>
                 </Link>
+                <Link to="/request-blood">
+                  <Button size="lg" variant="secondary" className="h-14 px-8 rounded-full text-lg shadow-lg hover:shadow-secondary/25 transition-all gap-2 group">
+                    <Droplets className="h-5 w-5 fill-current" />
+                    Request Blood
+                  </Button>
+                </Link>
               </div>
             </motion.div>
 
