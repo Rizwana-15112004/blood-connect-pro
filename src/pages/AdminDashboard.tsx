@@ -7,7 +7,7 @@ import { BloodGroupDonutChart } from '@/components/dashboard/BloodGroupDonutChar
 import { NewDonorsDonutChart } from '@/components/dashboard/NewDonorsDonutChart';
 import { RecentDonorsList } from '@/components/dashboard/RecentDonorsList';
 import { UrgentBloodAlert } from '@/components/dashboard/UrgentBloodAlert';
-import { InventoryItem } from '@/lib/mockData'; // Keeping InventoryItem type for now if needed, or better move to types. Triggering clean up.
+import { InventoryItem, mockService } from '@/lib/mockData'; // Keeping InventoryItem type for now if needed, or better move to types. Triggering clean up.
 import { AdminRequestManager } from '@/components/dashboard/AdminRequestManager';
 import { DonationApproval } from '@/components/admin/DonationApproval';
 import { api } from '@/services/api';
@@ -33,31 +33,22 @@ export default function AdminDashboard() {
 
     const fetchAdminData = async () => {
         try {
-            // Real API Integration
-            // 1. Dashboard Stats (We might need a dedicated endpoint, but can derive some)
-            // For now, let's just fetch requests and inventory. 
-            // Stats endpoint doesn't exist yet in views.py, so we can mock stats or adding a stats endpoint.
-            // Let's stick to what we have: Inventory and Requests.
-
-            // Fetch Inventory (We don't have a direct inventory endpoint either! We only have Views logic)
-            // Wait, views.py has `GetRequestsView`, `GetPendingDonationsView`. 
-            // We need to implement `GetInventoryView` or similar if we want real data.
-            // For this step, I'll fetch Requests and Pending Donations.
-
-            const [paramRequests, pendingDonations, statsData] = await Promise.all([
-                api.getRequests(),
-                api.getUnverifiedDonations(),
-                api.getDashboardStats()
+            // Use mockService for consistent demo data across the app
+            const [paramRequests, unverifiedDonations, statsData, inventoryData, recentDonorsData] = await Promise.all([
+                mockService.getRequests(),
+                mockService.getUnverifiedDonations(),
+                mockService.getDashboardStats(),
+                mockService.getInventory(),
+                mockService.getRecentDonors()
             ]);
 
             setPendingRequestsCount(paramRequests.filter((r: any) => r.status === 'pending').length);
+            setInventory(inventoryData);
+            setRecentDonors(recentDonorsData);
 
             if (statsData) {
                 setStats(statsData);
             }
-
-            // TODO: Wire up other stats when endpoints exist.
-            // For now, requests are the critical part requested.
 
         } catch (error) {
             console.error('Error fetching admin data:', error);
@@ -71,7 +62,7 @@ export default function AdminDashboard() {
         name: item.blood_group,
         value: item.units_available,
         color: getBloodGroupColor(item.blood_group)
-    }));
+    })).filter(item => item.value > 0);
 
     const containerVariants = {
         hidden: { opacity: 0 },

@@ -494,13 +494,37 @@ export const mockService = {
         await delay(400);
         const idx = donationsStore.findIndex(d => d.id === donationId);
         if (idx !== -1) {
+            const donation = donationsStore[idx];
+
             if (action === 'approve') {
-                donationsStore[idx].is_verified = true;
+                donation.is_verified = true;
                 // Update inventory
-                const item = inventoryStore.find(i => i.blood_group === donationsStore[idx].blood_group);
-                if (item) item.units_available += donationsStore[idx].units_donated;
+                const item = inventoryStore.find(i => i.blood_group === donation.blood_group);
+                if (item) item.units_available += donation.units_donated;
+
+                // Notify User
+                notificationsStore.unshift({
+                    id: Math.random().toString(36).substr(2, 9),
+                    userId: donation.donor_id,
+                    title: 'Donation Verified',
+                    message: `Thank you! Your donation of ${donation.units_donated} unit(s) of ${donation.blood_group} on ${format(new Date(donation.donation_date), 'MMM d, yyyy')} has been verified by the center.`,
+                    date: new Date().toISOString(),
+                    read: false,
+                    type: 'system'
+                });
+
             } else {
                 donationsStore.splice(idx, 1);
+                // Notify User of Rejection
+                notificationsStore.unshift({
+                    id: Math.random().toString(36).substr(2, 9),
+                    userId: donation.donor_id,
+                    title: 'Donation Record Rejected',
+                    message: `Your reported donation on ${format(new Date(donation.donation_date), 'MMM d, yyyy')} could not be verified and has been removed. Please contact us if this is an error.`,
+                    date: new Date().toISOString(),
+                    read: false,
+                    type: 'system'
+                });
             }
         }
         return { success: true };
