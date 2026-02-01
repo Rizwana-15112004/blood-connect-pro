@@ -247,16 +247,23 @@ class LoginView(View):
             raw_username = data.get('email', '').strip()
             password = data.get('password')
             
+            print(f"--- LOGIN ATTEMPT ---")
+            print(f"Username provided: [{raw_username}]")
             
             # 1. Try direct authenticate
             user = authenticate(username=raw_username, password=password)
+            print(f"Direct authenticate result: {user}")
             
             # 2. If fails and looks like email, try finding user by email first
             if user is None and '@' in raw_username:
+                print(f"Direct auth failed. Searching for user with email: {raw_username}")
                 user_obj = User.objects.filter(email=raw_username).first()
                 if user_obj:
+                    print(f"Found user object: {user_obj.username}. Attempting auth with this username.")
                     user = authenticate(username=user_obj.username, password=password)
+                    print(f"Email lookup authenticate result: {user}")
             
+            print(f"Final Auth Result: {user}")
             
             if user is not None:
                 login(request, user)

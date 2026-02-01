@@ -183,8 +183,14 @@ export const mockService = {
         await delay(500);
         let userSession: any = null;
 
-        if (false) {
-            // No hardcoded admin in production
+        if (email === 'admin@bloodlife.com' && password === 'admin') {
+            userSession = {
+                id: 'admin',
+                email: email,
+                role: 'admin',
+                isEligible: true,
+                bloodGroup: 'O+',
+            };
         } else {
             const donor = donorsStore.find(d => d.email === email);
             if (donor) {
@@ -252,8 +258,14 @@ export const mockService = {
 
     getUserProfile: async (email: string) => {
         await delay(300);
-        if (false) {
-            // No hardcoded admin
+        if (email === 'admin@bloodlife.com') {
+            return {
+                id: 'admin',
+                email: email,
+                role: 'admin',
+                isEligible: true,
+                bloodGroup: 'O+'
+            };
         }
         const donor = donorsStore.find(d => d.email === email);
         return donor ? { ...donor, role: 'donor' } : null;
