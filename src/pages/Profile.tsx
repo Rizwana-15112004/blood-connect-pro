@@ -38,12 +38,13 @@ function DonationLogDialog({ onDonationSuccess, userBloodGroup }: { onDonationSu
   const [loading, setLoading] = useState(false);
   const [lastRecordedDonation, setLastRecordedDonation] = useState<any>(null);
   const { toast } = useToast();
+  const { user } = useAuth(); // Helper to access user inside dialog
 
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      // Use useAuth to get user id if needed, but mockService handles it via userId arg
-      const data = await api.logDonation({ units, center, bloodGroup: userBloodGroup });
+      // Pass user.id for Mock Mode compatibility
+      const data = await api.logDonation({ units, center, bloodGroup: userBloodGroup }, user ? String(user.id) : '');
 
       if (data.success && data.donation) {
         setLastRecordedDonation(data.donation);
@@ -135,7 +136,7 @@ export default function Profile() {
   const fetchProfile = async () => {
     try {
       // 1. Fetch Real Donations
-      const realDonations = await api.getMyDonations();
+      const realDonations = await api.getMyDonations(String(user.id));
 
       // Filter for verified only for "Official" stats, or show pending?
       // Requirement: Certificate only if approved.

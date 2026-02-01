@@ -199,7 +199,7 @@ export default function Dashboard() {
 
   const fetchPersonalStats = async () => {
     try {
-      const myDonations = await api.getMyDonations();
+      const myDonations = await api.getMyDonations(user ? String(user.id) : '');
       // Filter for verified/completed donations to match Profile logic
       const verifiedDonations = myDonations.filter((d: any) => d.is_verified);
 
