@@ -136,19 +136,67 @@ export default function Profile() {
 
   const fetchProfile = async () => {
     try {
-      // Use Mock Service
-      const profileData = await mockService.getProfile(user?.email);
-      setProfile(profileData);
+      // 1. Fetch Real Donations
+      const getCookie = (name: string) => { // Helper for potential future use or consistency
+        return null; // GET requests don't strictly need it if we rely on session
+      };
+
+      const donationsRes = await fetch('/api/my-donations', { credentials: 'same-origin' });
+      let realDonations: any[] = [];
+      if (donationsRes.ok) {
+        realDonations = await donationsRes.json();
+      }
+
+      // Filter for verified only for "Official" stats, or show pending?
+      // Requirement: Certificate only if approved.
+      const verifiedDonations = realDonations.filter((d: any) => d.is_verified);
+
+      // 2. Fetch Profile Details (Try Mock first, then Fallback)
+      // Since we don't have a real Donor Profile API yet, we stick to Mock for "Base" info
+      // But we OVERRIDE the stats with real data.
+      let profileData = await mockService.getProfile(user?.email);
+
+      if (!profileData && user) {
+        // Fallback profile if not in mock data (e.g. new sign up)
+        profileData = {
+          id: user.id,
+          full_name: user.email.split('@')[0], // Fallback name
+          email: user.email,
+          phone: '',
+          state: '',
+          city: '',
+          blood_group: verifiedDonations.length > 0 ? verifiedDonations[0].blood_group : 'Unknown', // Infer or Unknown
+          last_donation_date: '',
+          total_donations: 0,
+          is_available: true,
+          has_chronic_disease: false,
+          is_on_medication: false,
+          is_pregnant: false,
+          registered_at: new Date().toISOString(),
+          date_of_birth: '',
+          gender: 'other',
+          weight: 0
+        };
+      }
 
       if (profileData) {
-        // Fetch monthly donations from Mock Service
-        const donationsData = await mockService.getDonations();
-        const userDonations = donationsData.filter(d => d.donor_id === profileData.id);
+        // Use Real Stats
+        const latestDonation = verifiedDonations.length > 0 ? verifiedDonations[0] : null; // Sorted by date desc in backend
 
+        const updatedProfile = {
+          ...profileData,
+          total_donations: verifiedDonations.length, // Count verified only?
+          last_donation_date: latestDonation ? latestDonation.donation_date : null,
+          // blood_group: latestDonation ? latestDonation.blood_group : profileData.blood_group // Maybe update blood group if known?
+        };
+
+        setProfile(updatedProfile);
+
+        // Chart Data
         const monthlyData: Record<string, number> = {};
-        userDonations.forEach(d => {
+        verifiedDonations.forEach((d: any) => {
           const monthKey = format(new Date(d.donation_date), 'MMM yyyy');
-          monthlyData[monthKey] = (monthlyData[monthKey] || 0) + Number(d.units_donated);
+          monthlyData[monthKey] = (monthlyData[monthKey] || 0) + Number(d.units);
         });
 
         const chartData = generate6MonthData(
@@ -319,7 +367,7 @@ export default function Profile() {
         </motion.div>
 
         {/* Certificate Section */}
-        {profile.total_donations > 0 && (
+        {profile.total_donations > 0 && profile.last_donation_date && (
           <CertificateCard donor={profile} />
         )}
 

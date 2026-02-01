@@ -83,6 +83,27 @@ class VerifyDonationView(View):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
 
+class DonorHistoryView(View):
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return JsonResponse({'error': 'Unauthorized'}, status=401)
+            
+        # Return ALL donations (verified and pending) so user can see status? 
+        # Or just verified? The requirement says "certificate automatically goes... then he can download"
+        # I'll return both but mark status.
+        donations = Donation.objects.filter(donor=request.user).order_by('-donation_date')
+        data = []
+        for d in donations:
+            data.append({
+                'id': d.id,
+                'units': d.units,
+                'blood_group': d.blood_group,
+                'center': d.center,
+                'donation_date': d.donation_date.isoformat(),
+                'is_verified': d.is_verified
+            })
+        return JsonResponse(data, safe=False)
+
 
 class ReactAppView(TemplateView):
     template_name = "index.html"
