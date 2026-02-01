@@ -9,6 +9,7 @@ import { RecentDonorsList } from '@/components/dashboard/RecentDonorsList';
 import { UrgentBloodAlert } from '@/components/dashboard/UrgentBloodAlert';
 import { mockService, InventoryItem } from '@/lib/mockData';
 import { AdminRequestManager } from '@/components/dashboard/AdminRequestManager';
+import { DonationApproval } from '@/components/admin/DonationApproval';
 
 export default function AdminDashboard() {
     const [loading, setLoading] = useState(true);
@@ -151,6 +152,11 @@ export default function AdminDashboard() {
                         </button>
                     </div>
                     <RecentDonorsList donors={recentDonors} />
+                </div>
+
+                {/* Pending Verification Section */}
+                <div className="rounded-xl border bg-card p-6 shadow-sm border-l-4 border-l-orange-500">
+                    <DonationApproval />
                 </div>
 
                 {/* Blood Requests Management */}

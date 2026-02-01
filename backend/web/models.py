@@ -38,6 +38,8 @@ class Donation(models.Model):
     center = models.CharField(max_length=200, blank=True)
     donation_date = models.DateTimeField(auto_now_add=True)
     is_verified = models.BooleanField(default=False)
+    verified_at = models.DateTimeField(null=True, blank=True)
+    verified_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='verified_donations')
 
     def __str__(self):
         return f"{self.donor.username} - {self.units} units ({self.donation_date})"

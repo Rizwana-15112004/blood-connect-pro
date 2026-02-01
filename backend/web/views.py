@@ -1,4 +1,5 @@
 import json
+from django.utils import timezone
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.http import JsonResponse
@@ -9,7 +10,7 @@ from django.views.generic import TemplateView
 from django.views import View
 from .models import BloodRequest, Donation, Inventory
 
-# @method_decorator(csrf_exempt, name='dispatch')
+@method_decorator(csrf_exempt, name='dispatch')
 class LogDonationView(View):
     def post(self, request):
         try:
@@ -22,17 +23,63 @@ class LogDonationView(View):
             donation = Donation.objects.create(
                 donor=user,
                 units=data.get('units'),
-                blood_group=data.get('bloodGroup'), # Or fetch from user profile if stored
+                blood_group=data.get('bloodGroup'),
                 center=data.get('center', ''),
-                is_verified=False # Requires admin verification? Or auto-verify for now? Plan said "updates database". 
+                is_verified=False 
             )
             
-            # Simple inventory update (unsafe for concurrency but fine for prototype)
-            inventory, created = Inventory.objects.get_or_create(blood_group=donation.blood_group)
-            inventory.units_available = float(inventory.units_available) + float(donation.units)
-            inventory.save()
+            # Inventory update REMOVED. Now happens on verification.
             
             return JsonResponse({'success': True, 'id': donation.id})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+class GetPendingDonationsView(View):
+    def get(self, request):
+        # Admin check
+        # if not request.user.is_staff: return JsonResponse({'error': 'Forbidden'}, status=403)
+        
+        pending_donations = Donation.objects.filter(is_verified=False).order_by('-donation_date')
+        data = []
+        for d in pending_donations:
+            data.append({
+                'id': d.id,
+                'donor_name': d.donor.username, # Or full profile name if available
+                'units': d.units,
+                'blood_group': d.blood_group,
+                'center': d.center,
+                'date': d.donation_date.isoformat(),
+            })
+        return JsonResponse(data, safe=False)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class VerifyDonationView(View):
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            donation_id = data.get('donationId')
+            action = data.get('action') # 'approve' or 'reject'
+            
+            donation = Donation.objects.get(id=donation_id)
+            
+            if action == 'approve':
+                donation.is_verified = True
+                donation.verified_at = timezone.now()
+                if request.user.is_authenticated:
+                    donation.verified_by = request.user
+                donation.save()
+                
+                # Update Inventory
+                inventory, created = Inventory.objects.get_or_create(blood_group=donation.blood_group)
+                inventory.units_available = float(inventory.units_available) + float(donation.units)
+                inventory.save()
+                
+            elif action == 'reject':
+                donation.delete() # Simple rejection logic
+                
+            return JsonResponse({'success': True})
+        except Donation.DoesNotExist:
+            return JsonResponse({'error': 'Donation not found'}, status=404)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
 
