@@ -44,8 +44,8 @@ class GetPendingDonationsView(View):
         for d in pending_donations:
             data.append({
                 'id': d.id,
-                'donor_name': d.donor.username, # Or full profile name if available
-                'units': d.units,
+                'donor_name': d.donor.username,
+                'units': str(d.units), # Decimal to string
                 'blood_group': d.blood_group,
                 'center': d.center,
                 'date': d.donation_date.isoformat(),
@@ -71,6 +71,8 @@ class VerifyDonationView(View):
                 
                 # Update Inventory
                 inventory, created = Inventory.objects.get_or_create(blood_group=donation.blood_group)
+                # Ensure we handle Decimal conversions if needed, though Python handles mixing well usually.
+                # But safer to match types
                 inventory.units_available = float(inventory.units_available) + float(donation.units)
                 inventory.save()
                 
@@ -88,15 +90,12 @@ class DonorHistoryView(View):
         if not request.user.is_authenticated:
             return JsonResponse({'error': 'Unauthorized'}, status=401)
             
-        # Return ALL donations (verified and pending) so user can see status? 
-        # Or just verified? The requirement says "certificate automatically goes... then he can download"
-        # I'll return both but mark status.
         donations = Donation.objects.filter(donor=request.user).order_by('-donation_date')
         data = []
         for d in donations:
             data.append({
                 'id': d.id,
-                'units': d.units,
+                'units': str(d.units), # Decimal to String
                 'blood_group': d.blood_group,
                 'center': d.center,
                 'donation_date': d.donation_date.isoformat(),
