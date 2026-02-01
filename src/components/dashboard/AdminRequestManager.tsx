@@ -40,13 +40,20 @@ export function AdminRequestManager() {
                 api.getRequests(),
                 api.getDonors()
             ]);
-            setRequests(allRequests);
-            setDonors(allDonors);
+            setRequests(allRequests || []);
+            setDonors(allDonors || []);
         } catch (error) {
             console.error("Error loading admin data:", error);
         } finally {
             setLoading(false);
         }
+    };
+
+    const formatDateSafe = (dateStr: string | undefined | null) => {
+        if (!dateStr) return 'N/A';
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return 'N/A';
+        return format(d, 'MMM d');
     };
 
     const handleStatusChange = async (id: string, status: 'approved' | 'rejected') => {
@@ -165,7 +172,7 @@ export function AdminRequestManager() {
                             <div key={req.id} className={`p-4 flex items-center justify-between ${idx !== 0 ? 'border-t' : ''}`}>
                                 <div>
                                     <p className="font-medium">{req.patient_name}</p>
-                                    <p className="text-xs text-muted-foreground">{format(new Date(req.created_at || new Date()), 'MMM d')} • {req.location}</p>
+                                    <p className="text-xs text-muted-foreground">{formatDateSafe(req.created_at)} • {req.location}</p>
                                 </div>
                                 <div className="text-right">
                                     <Badge variant={req.status === 'approved' ? 'default' : 'destructive'} className={req.status === 'approved' ? 'bg-green-600' : ''}>

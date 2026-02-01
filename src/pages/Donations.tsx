@@ -340,7 +340,10 @@ export default function Donations() {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                        {format(new Date(donation.donation_date), 'MMM d, yyyy')}
+                        {(() => {
+                          const d = new Date(donation.donation_date);
+                          return isNaN(d.getTime()) ? 'Invalid Date' : format(d, 'MMM d, yyyy');
+                        })()}
                       </div>
                     </TableCell>
                     <TableCell className="text-muted-foreground">

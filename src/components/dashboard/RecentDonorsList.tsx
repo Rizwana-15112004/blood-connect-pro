@@ -7,9 +7,9 @@ import { Link } from 'react-router-dom';
 
 interface Donor {
   id: string;
-  fullName: string;
-  bloodGroup: string;
-  registeredAt: string;
+  full_name: string;
+  blood_group: string;
+  registered_at: string;
 }
 
 interface RecentDonorsListProps {
@@ -74,14 +74,17 @@ export function RecentDonorsList({ donors }: RecentDonorsListProps) {
                 <User className="h-5 w-5 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-foreground truncate">{donor.fullName}</p>
+                <p className="font-medium text-foreground truncate">{donor.full_name}</p>
                 <p className="text-xs text-muted-foreground">
-                  Joined {format(new Date(donor.registeredAt), 'MMM d, yyyy')}
+                  Joined {(() => {
+                    const d = new Date(donor.registered_at);
+                    return isNaN(d.getTime()) ? 'Recently' : format(d, 'MMM d, yyyy');
+                  })()}
                 </p>
               </div>
-              <Badge className={getBloodBadgeClass(donor.bloodGroup)}>
+              <Badge className={getBloodBadgeClass(donor.blood_group)}>
                 <Droplets className="mr-1 h-3 w-3" />
-                {donor.bloodGroup}
+                {donor.blood_group}
               </Badge>
             </motion.div>
           ))

@@ -48,11 +48,14 @@ class GetPendingDonationsView(View):
         for d in pending_donations:
             data.append({
                 'id': d.id,
-                'donor_name': d.donor.username,
-                'units': str(d.units), # Decimal to string
+                'donor_id': str(d.donor.id),
+                'donors': {'full_name': d.donor.first_name or d.donor.username},
+                'units_donated': float(d.units),
                 'blood_group': d.blood_group,
-                'center': d.center,
-                'date': d.donation_date.isoformat(),
+                'donation_center': d.center,
+                'donation_date': d.donation_date.isoformat(),
+                'is_verified': d.is_verified,
+                'collected_by': 'Admin' # Default
             })
         return JsonResponse(data, safe=False)
 
@@ -99,11 +102,14 @@ class DonorHistoryView(View):
         for d in donations:
             data.append({
                 'id': d.id,
-                'units': str(d.units), # Decimal to String
+                'donor_id': str(d.donor.id),
+                'donors': {'full_name': d.donor.first_name or d.donor.username},
+                'units_donated': float(d.units),
                 'blood_group': d.blood_group,
-                'center': d.center,
+                'donation_center': d.center,
                 'donation_date': d.donation_date.isoformat(),
-                'is_verified': d.is_verified
+                'is_verified': d.is_verified,
+                'collected_by': 'Staff'
             })
         return JsonResponse(data, safe=False)
 
@@ -122,9 +128,9 @@ class GetRequestsView(View):
                 'blood_group': r.blood_group,
                 'location': r.city, # Mapping city to location
                 'status': r.status.lower(), # frontend expects lowercase
-                'request_date': r.created_at.isoformat(),
+                'created_at': r.created_at.isoformat(),
                 'assigned_donor_id': r.assigned_donor_id,
-                'units': 1, # Default or add to model
+                'units': 1, 
                 'reason': r.additional_notes,
                 'requester_email': r.requester_email,
                 'requester_id': 'guest' 
@@ -334,7 +340,8 @@ class GetDonorsView(View):
                 'blood_group': d.blood_group,
                 'city': d.city,
                 'is_eligible': d.is_eligible,
-                'phone': d.phone
+                'phone': d.phone,
+                'registered_at': d.registered_at.isoformat() if hasattr(d, 'registered_at') and d.registered_at else d.user.date_joined.isoformat()
             })
         return JsonResponse(data, safe=False)
 
