@@ -21,14 +21,21 @@ import { ProtectedRoute } from "./components/layout/ProtectedRoute";
 import { AdminRoute } from "./components/layout/AdminRoute";
 import { PageTransition } from "./components/layout/PageTransition";
 import { useAutoLogout } from "./hooks/useAutoLogout";
+
 import { useSecurity } from "./hooks/useSecurity";
+import { DemoBanner } from "@/components/layout/DemoBanner";
 
 const queryClient = new QueryClient();
 
 const AuthenticatedApp = () => {
   useAutoLogout(); // Activate auto-logout
   useSecurity(); // Activate security listeners
-  return <AnimatedRoutes />;
+  return (
+    <>
+      <DemoBanner />
+      <AnimatedRoutes />
+    </>
+  );
 };
 
 const AnimatedRoutes = () => {

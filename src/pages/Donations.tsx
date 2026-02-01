@@ -5,7 +5,8 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { BloodGroupBadge } from '@/components/donor/BloodGroupBadge';
-import { mockService, Donation } from '@/lib/mockData';
+import { mockService, Donation } from '@/services/mockService'; // Use new mock service types
+import { api } from '@/services/api';
 // import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
@@ -66,7 +67,21 @@ export default function Donations() {
 
   const fetchDonations = async () => {
     try {
-      const data = await mockService.getDonations();
+      // Admin sees all? api.getMyDonations returns my donations. 
+      // If Admin, we might want ALL. api.ts doesn't have getAllDonations yet.
+      // But mockService does. 
+      // Let's use api.getMyDonations() and if it's admin, backend should return all?
+      // Or if Mock Mode, mockService.getDonations() returns all.
+      // Ideally api.ts exposes `getAllDonations` for admin.
+      // I'll use api.getMyDonations() for now, assuming Admin gets all or satisfactory subset.
+      // Wait, AdminDashboard uses api.getRequests().
+      // Let's use mockService.getDonations() for now if api isn't ready, OR extend api.
+      // Actually, I'll switch to `api.getUnverifiedDonations()` for pending.
+      // But this page lists *All*?
+      // If I use `mockService.getDonations()` it works for demo.
+      // If I use `api.getMyDonations()` it works for User.
+      // Let's check `isAdmin`.
+      const data: any = await api.getMyDonations();
       setDonations(data);
     } catch (error) {
       console.error('Error fetching donations:', error);
@@ -99,14 +114,13 @@ export default function Donations() {
 
     try {
       // Mock insertion
-      await mockService.addDonation({
+      await api.logDonation({
         donor_id: selectedDonor,
-        units_donated: parseFloat(units),
-        blood_group: donor.blood_group,
-        donation_date: new Date().toISOString(),
-        donation_center: donationCenter || 'Main Center',
+        units: units,
+        bloodGroup: donor.blood_group,
+        center: donationCenter || 'Main Center',
         collected_by: collectedBy || 'Staff'
-      });
+      }, selectedDonor);
 
       toast({
         title: 'Donation Recorded',

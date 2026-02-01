@@ -16,6 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Heart, Activity, MapPin, Phone, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
+import { api } from '@/services/api';
 
 export default function RequestBlood() {
     const { toast } = useToast();
@@ -34,52 +35,9 @@ export default function RequestBlood() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-
         // Real API call
         try {
-            const getCookie = (name: string) => {
-                let cookieValue = null;
-                if (document.cookie && document.cookie !== '') {
-                    const cookies = document.cookie.split(';');
-                    for (let i = 0; i < cookies.length; i++) {
-                        const cookie = cookies[i].trim();
-                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                            break;
-                        }
-                    }
-                }
-                return cookieValue;
-            };
-
-            const response = await fetch('/api/request-blood/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken') || ''
-                },
-                body: JSON.stringify(formData),
-                credentials: 'same-origin'
-            });
-
-            let data;
-            const contentType = response.headers.get("content-type");
-            if (contentType && contentType.indexOf("application/json") !== -1) {
-                try {
-                    data = await response.json();
-                } catch (e) {
-                    throw new Error('Invalid JSON response from server');
-                }
-            } else {
-                // If not JSON, likely an HTML error page or empty
-                if (!response.ok) {
-                    throw new Error(`Server Error: ${response.status} ${response.statusText}`);
-                }
-            }
-
-            if (!response.ok) {
-                throw new Error(data?.error || `Request failed: ${response.status}`);
-            }
+            const data = await api.createRequest(formData);
 
             toast({
                 title: "Request Submitted Successfully",

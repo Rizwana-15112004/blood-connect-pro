@@ -10,16 +10,17 @@ interface User {
 }
 
 interface AuthContextType {
-  user: User | null;
-  loading: boolean;
   signUp: (email: string, password: string, isEligible: boolean) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   isAdmin: boolean;
   isDonor: boolean;
+  user: User | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+import { api } from '@/services/api';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -29,64 +30,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkAuth();
   }, []);
 
-  const getCSRFToken = () => {
-    const name = 'csrftoken';
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-      const cookies = document.cookie.split(';');
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i].trim();
-        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-          break;
-        }
-      }
-    }
-    return cookieValue;
-  };
-
-  const fetchWithCSRF = async (url: string, options: RequestInit = {}) => {
-    // Ensure we have a CSRF token for mutations
-    if (options.method && ['POST', 'PUT', 'DELETE'].includes(options.method)) {
-      let csrftoken = getCSRFToken();
-      if (!csrftoken) {
-        // Try to get CSRF token, but don't crash if it fails (HTML response etc)
-        try {
-          await fetch('/api/csrf/');
-          csrftoken = getCSRFToken();
-        } catch (e) {
-          // Ignore error
-        }
-      }
-
-      const headers = {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': csrftoken || '',
-        ...options.headers,
-      };
-      options.headers = headers as HeadersInit;
-    }
-
-    options.credentials = 'same-origin';
-    return fetch(url, options);
-  };
-
   const checkAuth = async () => {
     try {
-      try {
-        await fetch('/api/csrf/', { credentials: 'same-origin' });
-      } catch (e) { /* ignore */ }
-
-      const res = await fetchWithCSRF('/api/user/');
-
-      // Strict JSON check
-      const contentType = res.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("Response is not JSON");
-      }
-
-      const data = await res.json();
-      if (data.user) {
+      const data = await api.checkAuth();
+      if (data && data.user) {
         setUser(data.user);
       } else {
         setUser(null);
@@ -101,19 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string, isEligible: boolean) => {
     try {
-      const res = await fetchWithCSRF('/api/register/', {
-        method: 'POST',
-        body: JSON.stringify({ email, password, isEligible }),
-      });
-
-      const contentType = res.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("Server Error: Unable to register. Please check internet connection or server status.");
-      }
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Registration Failed");
-
+      const data = await api.register(email, password, isEligible);
       setUser(data.user);
       return { error: null };
     } catch (error: any) {
@@ -123,22 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const res = await fetchWithCSRF('/api/login/', {
-        method: 'POST',
-        body: JSON.stringify({ email, password }),
-      });
-
-      const contentType = res.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        // Backend is likely returning HTML (500, 404, or 502)
-        // Or server is offline/unreachable if Vite proxy returns error.
-        console.error("Non-JSON response from server during login:", res.status, res.statusText);
-        throw new Error("Cannot connect to server. Please ensure the backend is running via ./run.sh");
-      }
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Login failed');
-
+      const data = await api.login(email, password);
       setUser(data.user);
       return { error: null };
     } catch (error: any) {
@@ -147,12 +67,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    try {
-      await fetchWithCSRF('/api/logout/', { method: 'POST' });
-    } catch (e) { }
-
+    await api.logout();
     setUser(null);
-    localStorage.removeItem('demo_user'); // Clean up just in case
     window.location.href = '/';
   };
 

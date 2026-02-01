@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { api } from '@/services/api';
 
 interface PendingDonation {
     id: number;
@@ -26,11 +27,8 @@ export function DonationApproval() {
 
     const fetchPendingDonations = async () => {
         try {
-            const response = await fetch('/api/admin/donations/pending/');
-            if (response.ok) {
-                const data = await response.json();
-                setDonations(data);
-            }
+            const data = await api.getUnverifiedDonations();
+            setDonations(data);
         } catch (error) {
             console.error('Error fetching pending donations:', error);
         } finally {
@@ -40,33 +38,9 @@ export function DonationApproval() {
 
     const handleAction = async (donationId: number, action: 'approve' | 'reject') => {
         try {
-            // Include CSRF token
-            const getCookie = (name: string) => {
-                let cookieValue = null;
-                if (document.cookie && document.cookie !== '') {
-                    const cookies = document.cookie.split(';');
-                    for (let i = 0; i < cookies.length; i++) {
-                        const cookie = cookies[i].trim();
-                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                            break;
-                        }
-                    }
-                }
-                return cookieValue;
-            };
+            const res = await api.verifyDonation(donationId.toString(), action);
 
-            const response = await fetch('/api/admin/donations/verify/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken') || ''
-                },
-                body: JSON.stringify({ donationId, action }),
-                credentials: 'same-origin'
-            });
-
-            if (response.ok) {
+            if (res.success) {
                 toast({
                     title: action === 'approve' ? "Donation Verified" : "Donation Rejected",
                     description: `Successfully ${action}ed donation #${donationId}`,

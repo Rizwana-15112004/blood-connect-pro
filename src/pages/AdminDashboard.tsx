@@ -10,6 +10,7 @@ import { UrgentBloodAlert } from '@/components/dashboard/UrgentBloodAlert';
 import { InventoryItem } from '@/lib/mockData'; // Keeping InventoryItem type for now if needed, or better move to types. Triggering clean up.
 import { AdminRequestManager } from '@/components/dashboard/AdminRequestManager';
 import { DonationApproval } from '@/components/admin/DonationApproval';
+import { api } from '@/services/api';
 
 export default function AdminDashboard() {
     const [loading, setLoading] = useState(true);
@@ -44,15 +45,10 @@ export default function AdminDashboard() {
             // For this step, I'll fetch Requests and Pending Donations.
 
             const [paramRequests, pendingDonations, statsData] = await Promise.all([
-                fetch('/api/all-requests').then(res => res.json()),
-                fetch('/api/admin/donations/pending/').then(res => res.json()),
-                fetch('/api/admin/stats').then(res => res.json())
+                api.getRequests(),
+                api.getUnverifiedDonations(),
+                api.getDashboardStats()
             ]);
-
-            // We need a real inventory endpoint. I will assume we add it or use mock for now for that part?
-            // The user said "use real". I should probably add an endpoint for inventory.
-            // For now, let's rely on what we have and maybe use mock for missing parts 
-            // BUT strictly fetch requests from real API.
 
             setPendingRequestsCount(paramRequests.filter((r: any) => r.status === 'pending').length);
 

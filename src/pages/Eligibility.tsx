@@ -14,6 +14,7 @@ import {
 } from '@/lib/eligibility';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { api } from '@/services/api';
 import {
   Select,
   SelectContent,
@@ -70,34 +71,11 @@ export default function Eligibility() {
     if (eligibilityResult.isEligible && user) {
       // Save to backend
       try {
-        const getCookie = (name: string) => {
-          let cookieValue = null;
-          if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-              const cookie = cookies[i].trim();
-              if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-              }
-            }
-          }
-          return cookieValue;
-        };
-
-        fetch('/api/update-eligibility/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken') || ''
-          },
-          body: JSON.stringify({
-            isEligible: true,
-            lastDonationDate: formData.lastDonationDate
-            // We could send more profile data here if needed
-          })
+        api.updateEligibility('', {
+          isEligible: true,
+          lastDonationDate: formData.lastDonationDate
         }).then(res => {
-          if (res.ok) {
+          if (res.success || res.isEligible) {
             toast({
               title: "Profile Updated",
               description: "Your eligibility status has been saved.",

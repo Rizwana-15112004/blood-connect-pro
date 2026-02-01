@@ -1,0 +1,390 @@
+
+import { subDays, subMonths, format } from 'date-fns';
+
+// ----------------------------------------------------------------------
+// TYPES (Mirrors Backend Models)
+// ----------------------------------------------------------------------
+
+export interface Donor {
+    id: string;
+    full_name: string;
+    email: string;
+    role: 'admin' | 'donor'; // Added role
+    phone: string | null;
+    date_of_birth: string;
+    gender: 'male' | 'female' | 'other';
+    blood_group: string;
+    weight: number;
+    is_eligible: boolean;
+    total_donations: number;
+    last_donation_date: string | null;
+    registered_at: string;
+    address?: string | null;
+    city?: string | null;
+    state?: string | null;
+}
+
+export interface Donation {
+    id: string;
+    donor_id: string;
+    donation_date: string;
+    units_donated: number;
+    blood_group: string;
+    donation_center: string | null;
+    collected_by: string | null;
+    is_verified?: boolean; // Added
+    donors?: { full_name: string; };
+}
+
+export interface InventoryItem {
+    id: string;
+    blood_group: string;
+    units_available: number;
+    last_updated: string;
+}
+
+export interface BloodRequest {
+    id: string;
+    requester_id: string;
+    patient_name: string;
+    blood_group: string;
+    units: number;
+    reason: string;
+    location: string;
+    city?: string;
+    hospital?: string;
+    contact_number?: string;
+    urgency?: string;
+    additional_notes?: string;
+    status: 'pending' | 'approved' | 'rejected' | 'APPROVED' | 'REJECTED' | 'PENDING';
+    assigned_donor_id: string | null;
+    created_at: string;
+}
+
+export interface User {
+    id: string;
+    email: string;
+    role: 'admin' | 'donor';
+}
+
+// ----------------------------------------------------------------------
+// MOCK DATA (Initial State)
+// ----------------------------------------------------------------------
+
+const MOCK_INVENTORY: InventoryItem[] = [
+    { id: '1', blood_group: 'A+', units_available: 45, last_updated: new Date().toISOString() },
+    { id: '2', blood_group: 'A-', units_available: 15, last_updated: new Date().toISOString() },
+    { id: '3', blood_group: 'B+', units_available: 95, last_updated: new Date().toISOString() },
+    { id: '4', blood_group: 'B-', units_available: 8, last_updated: new Date().toISOString() },
+    { id: '5', blood_group: 'AB+', units_available: 25, last_updated: new Date().toISOString() },
+    { id: '6', blood_group: 'AB-', units_available: 5, last_updated: new Date().toISOString() },
+    { id: '7', blood_group: 'O+', units_available: 120, last_updated: new Date().toISOString() },
+    { id: '8', blood_group: 'O-', units_available: 4, last_updated: new Date().toISOString() },
+];
+
+const MOCK_DONORS: Donor[] = [
+    {
+        id: '1',
+        full_name: 'Laya',
+        email: 'laya@gmail.com',
+        role: 'donor',
+        phone: '+1 987 654 3210',
+        date_of_birth: '1995-01-01',
+        gender: 'female',
+        blood_group: 'O+',
+        weight: 65,
+        is_eligible: true,
+        total_donations: 5,
+        last_donation_date: subMonths(new Date(), 3).toISOString(),
+        registered_at: subMonths(new Date(), 12).toISOString(),
+        city: 'San Francisco',
+        state: 'CA',
+    },
+    // ... Add more if needed from original file
+];
+
+const MOCK_DONATIONS: Donation[] = [
+    {
+        id: '1',
+        donor_id: '1',
+        donation_date: subMonths(new Date(), 3).toISOString(),
+        units_donated: 1,
+        blood_group: 'O+',
+        donation_center: 'City Hospital',
+        collected_by: 'Nurse Alice',
+        is_verified: true,
+        donors: { full_name: 'Laya' }
+    }
+];
+
+const MOCK_REQUESTS: BloodRequest[] = [
+    {
+        id: 'req1',
+        requester_id: '2',
+        patient_name: 'John Doe',
+        blood_group: 'A+',
+        units: 2,
+        reason: 'Surgery',
+        location: 'City Hospital',
+        city: 'New York',
+        hospital: 'City Hospital',
+        contact_number: '1234567890',
+        status: 'pending',
+        assigned_donor_id: null,
+        created_at: subDays(new Date(), 1).toISOString()
+    }
+];
+
+
+// ----------------------------------------------------------------------
+// MOCK SERVICE (Simulation Logic)
+// ----------------------------------------------------------------------
+
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// In-Memory Storage (Resets on refresh, or upgrade to localStorage if persistence across refresh is needed for verify)
+// We'll use localStorage to simulate persistence over sessions for the user
+
+const loadStore = <T>(key: string, defaultData: T): T => {
+    try {
+        // Clear old mock data if needed or version it. For now, simple read.
+        // Actually, let's keep it memory-only for simplicity unless user refreshes. 
+        // GitHub Pages refresh loops might be annoying. Let's use memory for now to avoid complexity.
+        return defaultData;
+    } catch { return defaultData; }
+};
+
+let inventoryStore = [...MOCK_INVENTORY];
+let donorsStore = [...MOCK_DONORS];
+let donationsStore = [...MOCK_DONATIONS];
+let requestsStore = [...MOCK_REQUESTS];
+
+export const mockService = {
+
+    // --- AUTH ---
+
+    dbInit: () => {
+        // Ensure admin always exists in memory
+        console.log("Mock DB Initialized");
+    },
+
+    login: async (email: string, password: string) => {
+        await delay(500);
+        if (email === 'admin@bloodlife.com' && password === 'admin') {
+            return {
+                user: {
+                    id: 'admin',
+                    email: email,
+                    role: 'admin',
+                    isEligible: true,
+                    bloodGroup: 'O-',
+                }
+            };
+        }
+
+        // Simple donor login match by email
+        const donor = donorsStore.find(d => d.email === email);
+        if (donor) {
+            return {
+                user: {
+                    id: donor.id,
+                    email: donor.email,
+                    role: 'donor',
+                    isEligible: donor.is_eligible,
+                    bloodGroup: donor.blood_group,
+                    phone: donor.phone,
+                    city: donor.city
+                }
+            };
+        }
+
+        // Generic "Success" for any demo user if we want low friction? 
+        // No, let's allow registration.
+
+        throw new Error("Invalid credentials (try admin@bloodlife.com / admin)");
+    },
+
+    register: async (email: string, password: string, isEligible: boolean) => {
+        await delay(800);
+        if (donorsStore.find(d => d.email === email)) {
+            throw new Error("User already exists");
+        }
+
+        const newDonor: Donor = {
+            id: Math.random().toString(36).substr(2, 9),
+            full_name: email.split('@')[0],
+            email: email,
+            role: 'donor',
+            phone: '',
+            date_of_birth: '',
+            gender: 'other',
+            blood_group: 'Unknown',
+            weight: 0,
+            is_eligible: isEligible,
+            total_donations: 0,
+            last_donation_date: null,
+            registered_at: new Date().toISOString(),
+            city: ''
+        };
+        donorsStore.push(newDonor);
+
+        return {
+            user: {
+                id: newDonor.id,
+                email: newDonor.email,
+                role: 'donor',
+                isEligible: isEligible
+            }
+        };
+    },
+
+    getUserProfile: async (email: string) => {
+        await delay(300);
+        if (email === 'admin@bloodlife.com') {
+            return {
+                id: 'admin',
+                email: email,
+                role: 'admin',
+                isEligible: true
+            };
+        }
+        const donor = donorsStore.find(d => d.email === email);
+        return donor ? { ...donor, role: 'donor' } : null;
+    },
+
+    // --- DATA ---
+
+    getRequests: async () => {
+        await delay(400);
+        return requestsStore.map(r => ({
+            ...r,
+            status: r.status.toLowerCase()
+        })).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    },
+
+    createRequest: async (data: any) => {
+        await delay(500);
+        const newReq: BloodRequest = {
+            id: Math.random().toString(36).substr(2, 9),
+            requester_id: 'guest',
+            patient_name: data.patientName,
+            blood_group: data.bloodGroup,
+            units: 1,
+            reason: data.additionalNotes || '',
+            location: data.city || '',
+            city: data.city,
+            hospital: data.hospital,
+            contact_number: data.contactNumber,
+            urgency: data.urgency,
+            additional_notes: data.additionalNotes,
+            status: 'pending',
+            assigned_donor_id: null,
+            created_at: new Date().toISOString()
+        };
+        requestsStore.unshift(newReq);
+        return newReq;
+    },
+
+    allocateDonor: async (requestId: string, donorId: string | null, status: string) => {
+        await delay(400);
+        const req = requestsStore.find(r => r.id === requestId);
+        if (req) {
+            req.status = status as any;
+            if (donorId) req.assigned_donor_id = donorId;
+        }
+        return { success: true };
+    },
+
+    getUnverifiedDonations: async () => {
+        await delay(300);
+        return donationsStore.filter(d => !d.is_verified).map(d => ({
+            id: d.id,
+            donor_name: donorsStore.find(u => u.id === d.donor_id)?.full_name || 'Unknown',
+            units: d.units_donated,
+            blood_group: d.blood_group,
+            center: d.donation_center,
+            date: d.donation_date
+        }));
+    },
+
+    verifyDonation: async (donationId: string, action: 'approve' | 'reject') => {
+        await delay(400);
+        const idx = donationsStore.findIndex(d => d.id === donationId);
+        if (idx !== -1) {
+            if (action === 'approve') {
+                donationsStore[idx].is_verified = true;
+                // Update inventory
+                const item = inventoryStore.find(i => i.blood_group === donationsStore[idx].blood_group);
+                if (item) item.units_available += donationsStore[idx].units_donated;
+            } else {
+                donationsStore.splice(idx, 1);
+            }
+        }
+        return { success: true };
+    },
+
+    getStats: async () => {
+        await delay(300);
+        return {
+            totalDonors: donorsStore.length,
+            totalDonations: donationsStore.filter(d => d.is_verified).length,
+            totalUnits: inventoryStore.reduce((a, b) => a + b.units_available, 0),
+            eligibleDonors: donorsStore.filter(d => d.is_eligible).length,
+            thisWeekDonors: 5,
+            thisMonthDonors: 12,
+            lastMonthDonors: 8
+        };
+    },
+
+    logDonation: async (data: any, userId: string) => {
+        await delay(500);
+        const user = donorsStore.find(d => d.id === userId.toString()); // Try to find user
+        // Simplify for demo
+        const newDonation: Donation = {
+            id: Math.random().toString(36).substr(2, 9),
+            donor_id: userId,
+            donation_date: new Date().toISOString(),
+            units_donated: parseFloat(data.units || 1),
+            blood_group: data.bloodGroup || 'O+',
+            donation_center: data.center,
+            collected_by: 'Staff',
+            is_verified: false
+        };
+        donationsStore.unshift(newDonation);
+        return { success: true, id: newDonation.id };
+    },
+
+    getMyDonations: async (userId: string) => {
+        await delay(400);
+        return donationsStore.filter(d => d.donor_id === userId).map(d => ({
+            id: d.id,
+            units: d.units_donated,
+            blood_group: d.blood_group,
+            center: d.donation_center,
+            donation_date: d.donation_date,
+            is_verified: d.is_verified
+        }));
+    },
+
+    updateEligibility: async (userId: string, data: any) => {
+        await delay(400);
+        const donor = donorsStore.find(d => d.id === userId || d.email === userId);
+        if (donor) {
+            if (data.isEligible !== undefined) donor.is_eligible = data.isEligible;
+            if (data.phone) donor.phone = data.phone;
+            if (data.city) donor.city = data.city;
+            if (data.bloodGroup) donor.blood_group = data.bloodGroup;
+            return { success: true, isEligible: donor.is_eligible };
+        }
+        // Fallback for admin updates
+        if (userId === 'admin') {
+            return { success: true, isEligible: true };
+        }
+        return { success: true };
+    },
+
+    getDonors: async () => {
+        await delay(500);
+        return donorsStore;
+    }
+};

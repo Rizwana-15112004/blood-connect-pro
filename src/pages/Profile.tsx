@@ -11,6 +11,7 @@ import { BloodGroupBadge } from '@/components/donor/BloodGroupBadge';
 import { CertificateCard } from '@/components/donor/CertificateCard';
 // import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { api } from '@/services/api';
 
 import { Donor } from '@/types';
 import { checkEligibility, DonorHealthData, getBloodGroupCompatibility } from '@/lib/eligibility';
@@ -38,32 +39,9 @@ function DonationLogDialog({ onDonationSuccess, userBloodGroup }: { onDonationSu
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      const getCookie = (name: string) => {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-          const cookies = document.cookie.split(';');
-          for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-              break;
-            }
-          }
-        }
-        return cookieValue;
-      };
+      const data = await api.logDonation({ units, center, bloodGroup: userBloodGroup });
 
-      const response = await fetch('/api/donate/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCookie('csrftoken') || ''
-        },
-        body: JSON.stringify({ units, center, bloodGroup: userBloodGroup }),
-        credentials: 'same-origin'
-      });
-
-      if (response.ok) {
+      if (data.success || data.id) {
         toast({
           title: "Donation Logged!",
           description: "Thank you for your donation. Your records have been updated.",
@@ -72,8 +50,7 @@ function DonationLogDialog({ onDonationSuccess, userBloodGroup }: { onDonationSu
         onDonationSuccess();
         setIsOpen(false);
       } else {
-        const errorData = await response.json().catch(() => ({ error: response.statusText }));
-        throw new Error(errorData.error || `Server Error: ${response.status}`);
+        throw new Error("Failed to log donation");
       }
     } catch (error: any) {
       console.error("Donation Log Error:", error);
@@ -140,15 +117,7 @@ export default function Profile() {
   const fetchProfile = async () => {
     try {
       // 1. Fetch Real Donations
-      const getCookie = (name: string) => { // Helper for potential future use or consistency
-        return null; // GET requests don't strictly need it if we rely on session
-      };
-
-      const donationsRes = await fetch('/api/my-donations/', { credentials: 'same-origin' });
-      let realDonations: any[] = [];
-      if (donationsRes.ok) {
-        realDonations = await donationsRes.json();
-      }
+      const realDonations = await api.getMyDonations();
 
       // Filter for verified only for "Official" stats, or show pending?
       // Requirement: Certificate only if approved.
