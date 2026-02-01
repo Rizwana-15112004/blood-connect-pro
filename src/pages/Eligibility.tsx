@@ -69,18 +69,28 @@ export default function Eligibility() {
     const eligibilityResult = checkEligibility(healthData);
     setResult(eligibilityResult);
 
-    if (eligibilityResult.isEligible && user) {
-      // Save to backend
+    if (user) {
+      // Save local storage flag so Dashboard knows check was run
+      localStorage.setItem(`eligibility_checked_${user.id}`, 'true');
+
+      // Save to backend (mockService or API)
       try {
         api.updateEligibility('', {
-          isEligible: true,
+          isEligible: eligibilityResult.isEligible,
           lastDonationDate: formData.lastDonationDate
         }).then(res => {
-          if (res.success || res.isEligible) {
+          // Toast for feedback
+          if (eligibilityResult.isEligible) {
             toast({
-              title: "Profile Updated",
-              description: "Your eligibility status has been saved.",
+              title: "You are Eligible!",
+              description: "Your status has been updated. You can now donate blood.",
               className: "bg-green-600 text-white"
+            });
+          } else {
+            toast({
+              title: "Not Eligible",
+              description: "Based on the criteria, you are currently not eligible to donate.",
+              variant: "destructive"
             });
           }
         });

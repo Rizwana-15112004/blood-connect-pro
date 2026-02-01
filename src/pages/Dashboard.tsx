@@ -296,7 +296,7 @@ export default function Dashboard() {
           />
           <StatCard
             title="Blood Status"
-            value={hasCheckedEligibility ? (personalStats.isEligible ? 'Eligible' : 'Not Eligible') : 'Check Eligibility'}
+            value={hasCheckedEligibility ? (personalStats.isEligible ? 'Eligible' : 'You are Not Eligible') : 'Check Eligibility'}
             // subtitle={hasCheckedEligibility ? 'Based on WHO criteria' : 'Check eligibility to proceed'}
             subtitle={hasCheckedEligibility
               ? (personalStats.isEligible ? 'You are clear to donate' : 'Based on health/date criteria')
