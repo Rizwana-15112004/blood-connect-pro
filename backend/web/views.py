@@ -279,9 +279,34 @@ class LogoutView(View):
         logout(request)
         return JsonResponse({'success': 'Logged out'})
 
+@method_decorator(csrf_exempt, name='dispatch')
+class UpdateEligibilityView(View):
+    def post(self, request):
+        if not request.user.is_authenticated:
+            return JsonResponse({'error': 'Unauthorized'}, status=401)
+            
+        try:
+            data = json.loads(request.body)
+            # Find or create profile
+            profile, created = DonorProfile.objects.get_or_create(user=request.user)
+            
+            is_eligible = data.get('isEligible', False)
+            profile.is_eligible = is_eligible
+            
+            # Also update other profile fields if provided
+            if 'bloodGroup' in data: profile.blood_group = data['bloodGroup']
+            if 'phone' in data: profile.phone = data['phone']
+            if 'city' in data: profile.city = data['city']
+            if 'lastDonationDate' in data: profile.last_donation_date = data['lastDonationDate'] or None
+            
+            profile.save()
+            
+            return JsonResponse({'success': True, 'isEligible': profile.is_eligible})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
 class UserView(View):
     def get(self, request):
-        if request.user.is_authenticated:
         if request.user.is_authenticated:
             profile_data = {}
             try:
