@@ -137,6 +137,6 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'n4460220@gmail.com'
-EMAIL_HOST_PASSWORD = 'your-app-password' # <--- PASTE YOUR 16-DIGIT GOOGLE APP PASSWORD HERE
+EMAIL_HOST_PASSWORD = 'qaeo ezuy asht luzm' 
 DEFAULT_FROM_EMAIL = 'BloodLife Admin <n4460220@gmail.com>'
 
