@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/select';
 import { mockService } from '@/lib/mockData';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function BloodSearchSection() {
@@ -18,6 +19,7 @@ export function BloodSearchSection() {
     const [location, setLocation] = useState('');
     const [loading, setLoading] = useState(false);
     const [results, setResults] = useState<any[] | null>(null);
+    const navigate = useNavigate();
 
     const { toast } = useToast();
 
@@ -156,7 +158,7 @@ export function BloodSearchSection() {
                                             <Button
                                                 size="sm"
                                                 variant="secondary"
-                                                onClick={() => window.location.href = '/request-blood'}
+                                                onClick={() => navigate('/request-blood')}
                                             >
                                                 Request Blood
                                             </Button>

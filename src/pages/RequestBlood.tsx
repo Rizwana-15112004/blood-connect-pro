@@ -33,11 +33,17 @@ export default function RequestBlood() {
         e.preventDefault();
         setLoading(true);
 
-        // Simulate API call
+        // Real API call
         try {
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            const response = await fetch('/api/request-blood', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
 
-            console.log("Submitting request:", formData);
+            const data = await response.json();
+
+            if (!response.ok) throw new Error(data.error || 'Submission failed');
 
             toast({
                 title: "Request Submitted Successfully",
@@ -57,9 +63,10 @@ export default function RequestBlood() {
             });
 
         } catch (error) {
+            console.error(error);
             toast({
                 title: "Submission Failed",
-                description: "Please try again later.",
+                description: error instanceof Error ? error.message : "Please try again later.",
                 variant: "destructive"
             });
         } finally {
