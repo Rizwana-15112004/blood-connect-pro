@@ -27,7 +27,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 
-function DonationLogDialog({ onDonationSuccess }: { onDonationSuccess: () => void }) {
+function DonationLogDialog({ onDonationSuccess, userBloodGroup }: { onDonationSuccess: () => void, userBloodGroup: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [units, setUnits] = useState('1');
   const [center, setCenter] = useState('');
@@ -58,7 +58,7 @@ function DonationLogDialog({ onDonationSuccess }: { onDonationSuccess: () => voi
           'Content-Type': 'application/json',
           'X-CSRFToken': getCookie('csrftoken') || ''
         },
-        body: JSON.stringify({ units, center, bloodGroup: userBloodGroup }), // TODO: Fetch real blood group from user context
+        body: JSON.stringify({ units, center, bloodGroup: userBloodGroup }),
         credentials: 'same-origin'
       });
 
