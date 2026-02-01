@@ -12,6 +12,7 @@ import { UrgentBloodAlert } from '@/components/dashboard/UrgentBloodAlert';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
+import { api } from '@/services/api';
 import { mockService } from '@/services/mockService';
 // import { supabase } from '@/integrations/supabase/client';
 import { subDays, subMonths, startOfWeek, startOfMonth, format } from 'date-fns';
@@ -197,21 +198,36 @@ export default function Dashboard() {
   };
 
   const fetchPersonalStats = async () => {
-    const profile = await mockService.getProfile(user?.email || '') as any;
-    if (profile) {
-      const lastDate = profile.last_donation_date ? new Date(profile.last_donation_date) : null;
+    try {
+      const myDonations = await api.getMyDonations();
+      // Filter for verified/completed donations to match Profile logic
+      const verifiedDonations = myDonations.filter((d: any) => d.is_verified);
+
+      const lastDonation = verifiedDonations.length > 0 ? verifiedDonations[0] : null;
+      const lastDate = lastDonation ? new Date(lastDonation.donation_date) : null;
       let nextDate = null;
+
       if (lastDate) {
         nextDate = new Date(lastDate);
-        nextDate.setDate(nextDate.getDate() + 56); // 56 days rule
+        nextDate.setDate(nextDate.getDate() + 56);
       }
 
+      // We can get eligibility from the profile endpoint or re-calculate.
+      // For consistency, let's assume if there's no last donation, or it's been > 56 days, they might be eligible.
+      // However, Profile.tsx does a full check. Dashboard just shows a summary.
+      // Ideally we should fetch the full profile to get health overrides, but querying donations is the source of truth for "Total Donations".
+
+      // Let's also fetch profile for other flags if needed, but primary stats come from donations list.
+      // const profile = await api.getProfile(); // if available
+
       setPersonalStats({
-        totalDonations: profile.total_donations,
-        lastDonation: profile.last_donation_date,
+        totalDonations: verifiedDonations.length,
+        lastDonation: lastDonation ? lastDonation.donation_date : null,
         nextEligible: nextDate ? nextDate.toISOString() : new Date().toISOString(),
-        isEligible: profile.is_eligible || profile.isEligible || false
+        isEligible: !lastDate || (new Date() > nextDate!) // Simple date check for dashboard display
       });
+    } catch (e) {
+      console.error("Failed to fetch personal stats", e);
     }
   };
 
