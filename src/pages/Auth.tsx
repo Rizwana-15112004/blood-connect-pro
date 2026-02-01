@@ -52,7 +52,7 @@ export default function Auth() {
             <div>
               <h2 className="text-2xl font-bold text-foreground">Welcome Back!</h2>
               <p className="mt-2 text-muted-foreground">
-                You are currently signed in as <span className="font-medium text-foreground">{user.email}</span>
+                You are currently signed in.
               </p>
             </div>
 

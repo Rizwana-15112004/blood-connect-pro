@@ -19,11 +19,7 @@ export const isMockMode = (
     window.location.hostname.includes('vercel.app')
 ) && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1');
 
-if (isMockMode) {
-    console.log("🚀 Application running in MOCK MODE (Demo Mode)");
-} else {
-    console.log("🌐 Application running in REAL BACKEND MODE");
-}
+
 
 // Helper to get CSRF token (only for Real Backend)
 const getCSRFToken = () => {
@@ -44,7 +40,6 @@ const getCSRFToken = () => {
 
 // Real Backend Fetcher
 const fetchWithCSRF = async (url: string, options: RequestInit = {}) => {
-    console.warn(`🌐 FETCHING API: ${url}`, options);
     if (options.method && ['POST', 'PUT', 'DELETE'].includes(options.method)) {
         let csrftoken = getCSRFToken();
         if (!csrftoken) {
@@ -68,10 +63,8 @@ const fetchWithCSRF = async (url: string, options: RequestInit = {}) => {
 
     const data = await res.json();
     if (!res.ok) {
-        console.error(`❌ API ERROR [${res.status}] ${url}:`, data);
         throw new Error(data.error || 'Request failed');
     }
-    console.warn(`✅ API SUCCESS ${url}:`, data);
     return data;
 };
 

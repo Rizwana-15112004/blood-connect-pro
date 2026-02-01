@@ -14,15 +14,11 @@ from django.core.mail import send_mail
 from django.conf import settings
 from .models import BloodRequest, Donation, Inventory, DonorProfile
 
-def log_debug(message):
-    with open("backend_debug.log", "a") as f:
-        f.write(f"[{timezone.now()}] {message}\n")
-    print(message)
+
 
 @method_decorator(csrf_exempt, name='dispatch')
 class LogDonationView(View):
     def post(self, request):
-        log_debug(f"LogDonationView hit: {request.body.decode()}")
         try:
             data = json.loads(request.body)
             user = request.user
@@ -42,7 +38,7 @@ class LogDonationView(View):
             
             return JsonResponse({'success': True, 'id': donation.id})
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
+            return JsonResponse({'error': 'Request failed'}, status=400)
 
 class GetPendingDonationsView(View):
     def get(self, request):
@@ -96,7 +92,7 @@ class VerifyDonationView(View):
         except Donation.DoesNotExist:
             return JsonResponse({'error': 'Donation not found'}, status=404)
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
+            return JsonResponse({'error': 'Request failed'}, status=400)
 
 class DonorHistoryView(View):
     def get(self, request):
@@ -147,7 +143,6 @@ class GetRequestsView(View):
 @method_decorator(csrf_exempt, name='dispatch')
 class AllocateDonorView(View):
     def post(self, request):
-        log_debug(f"DEBUG: AllocateDonorView hit with data: {request.body.decode()}")
         try:
             data = json.loads(request.body)
             request_id = data.get('requestId')
@@ -171,7 +166,6 @@ class AllocateDonorView(View):
 
                     # Send Email to Requester
                     if blood_request.requester_email:
-                        log_debug(f"DEBUG: Attempting to send allocation email to {blood_request.requester_email}")
                         subject = f"Donor Allocated: BloodLife Request for {blood_request.blood_group}"
                         message = f"""
                         Dear Requester,
@@ -198,23 +192,16 @@ class AllocateDonorView(View):
                             [blood_request.requester_email],
                             fail_silently=False,
                         )
-                        log_debug(f"SUCCESS: Allocation email sent to {blood_request.requester_email}")
                     else:
-                        log_debug(f"WARNING: No requester_email found for request {request_id}, cannot send email.")
                 except User.DoesNotExist:
-                    log_debug(f"ERROR: Donor with ID {donor_id} not found.")
                 except Exception as e:
-                    log_debug(f"ERROR in email sending logic: {e}")
 
             blood_request.save()
-            log_debug(f"DEBUG: Request {request_id} updated to {blood_request.status}")
             return JsonResponse({'success': True})
         except BloodRequest.DoesNotExist:
-            log_debug(f"ERROR: Request {request_id} not found.")
             return JsonResponse({'error': 'Request not found'}, status=404)
         except Exception as e:
-            log_debug(f"ERROR in AllocateDonorView: {e}")
-            return JsonResponse({'error': str(e)}, status=400)
+            return JsonResponse({'error': 'Request failed'}, status=400)
 
 class GetInventoryView(View):
     def get(self, request):
@@ -230,7 +217,6 @@ class GetInventoryView(View):
 @method_decorator(csrf_exempt, name='dispatch')
 class RequestBloodView(View):
     def post(self, request):
-        log_debug(f"DEBUG: RequestBloodView hit with data: {request.body.decode()}")
         try:
             data = json.loads(request.body)
             blood_request = BloodRequest.objects.create(
@@ -243,11 +229,9 @@ class RequestBloodView(View):
                 urgency=data.get('urgency'),
                 additional_notes=data.get('additionalNotes', '')
             )
-            log_debug(f"SUCCESS: Blood request created with ID: {blood_request.id}")
             return JsonResponse({'success': True, 'id': blood_request.id})
         except Exception as e:
-            log_debug(f"ERROR in RequestBloodView: {e}")
-            return JsonResponse({'error': str(e)}, status=400)
+            return JsonResponse({'error': 'Request failed'}, status=400)
 
 
 
@@ -288,7 +272,7 @@ class LoginView(View):
                 })
             return JsonResponse({'error': 'Invalid credentials'}, status=400)
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
+            return JsonResponse({'error': 'Request failed'}, status=400)
 
 class RegisterView(View):
     def post(self, request):
@@ -298,7 +282,7 @@ class RegisterView(View):
             password = data.get('password')
             
             if User.objects.filter(username=email).exists():
-                return JsonResponse({'error': 'User already exists'}, status=400)
+                return JsonResponse({'error': 'Account already exists'}, status=400)
             
             user = User.objects.create_user(username=email, email=email, password=password)
             login(request, user)
@@ -309,7 +293,7 @@ class RegisterView(View):
             login(request, user)
             return JsonResponse({'user': {'id': user.id, 'email': user.username, 'role': 'donor', 'isEligible': False}})
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
+            return JsonResponse({'error': 'Request failed'}, status=400)
 
 class LogoutView(View):
     def post(self, request):
@@ -340,7 +324,7 @@ class UpdateEligibilityView(View):
             
             return JsonResponse({'success': True, 'isEligible': profile.is_eligible})
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
+            return JsonResponse({'error': 'Request failed'}, status=400)
 
 class GetDonorsView(View):
     def get(self, request):

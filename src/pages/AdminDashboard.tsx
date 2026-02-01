@@ -91,17 +91,6 @@ export default function AdminDashboard() {
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border-yellow-200 gap-2"
-                            onClick={() => {
-                                localStorage.clear();
-                                window.location.reload();
-                            }}
-                        >
-                            Debug: Cleanup Browser Cache
-                        </Button>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground bg-secondary/50 px-3 py-1 rounded-full border border-border/50">
                             <Calendar className="h-4 w-4" />
                             <span>{new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>

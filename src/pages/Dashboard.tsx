@@ -230,7 +230,7 @@ export default function Dashboard() {
             </span>
           </div>
           <p className="mt-1 text-muted-foreground">
-            Welcome back, {user?.email}
+            Welcome back!
           </p>
         </motion.div>
 
