@@ -9,7 +9,7 @@ from django.views.generic import TemplateView
 from django.views import View
 from .models import BloodRequest, Donation, Inventory
 
-@method_decorator(csrf_exempt, name='dispatch')
+# @method_decorator(csrf_exempt, name='dispatch')
 class LogDonationView(View):
     def post(self, request):
         try:
