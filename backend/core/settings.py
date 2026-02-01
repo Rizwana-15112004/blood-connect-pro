@@ -125,3 +125,8 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # CORS and CSRF Settings
 CORS_ALLOW_ALL_ORIGINS = True
 CSRF_TRUSTED_ORIGINS = ['http://localhost:8080', 'http://127.0.0.1:8080', 'https://blood-connect-pro.netlify.app']
+
+# Session Settings
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_COOKIE_AGE = 3600 # Optional: Set a hard limit (e.g., 1 hour) even if open, or leave default (2 weeks)
+
