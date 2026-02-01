@@ -44,6 +44,7 @@ const getCSRFToken = () => {
 
 // Real Backend Fetcher
 const fetchWithCSRF = async (url: string, options: RequestInit = {}) => {
+    console.warn(`🌐 FETCHING API: ${url}`, options);
     if (options.method && ['POST', 'PUT', 'DELETE'].includes(options.method)) {
         let csrftoken = getCSRFToken();
         if (!csrftoken) {
@@ -66,7 +67,11 @@ const fetchWithCSRF = async (url: string, options: RequestInit = {}) => {
     }
 
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Request failed');
+    if (!res.ok) {
+        console.error(`❌ API ERROR [${res.status}] ${url}:`, data);
+        throw new Error(data.error || 'Request failed');
+    }
+    console.warn(`✅ API SUCCESS ${url}:`, data);
     return data;
 };
 

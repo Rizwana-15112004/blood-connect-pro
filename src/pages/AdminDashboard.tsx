@@ -11,6 +11,7 @@ import { InventoryItem, mockService } from '@/services/mockService'; // Consolid
 import { AdminRequestManager } from '@/components/dashboard/AdminRequestManager';
 import { DonationApproval } from '@/components/admin/DonationApproval';
 import { api } from '@/services/api';
+import { Button } from '@/components/ui/button';
 
 export default function AdminDashboard() {
     const [loading, setLoading] = useState(true);
@@ -89,9 +90,22 @@ export default function AdminDashboard() {
                             Overview of blood inventory, donors, and donation activities.
                         </p>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground bg-secondary/50 px-3 py-1 rounded-full">
-                        <Calendar className="h-4 w-4" />
-                        <span>{new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                    <div className="flex items-center gap-3">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border-yellow-200 gap-2"
+                            onClick={() => {
+                                localStorage.clear();
+                                window.location.reload();
+                            }}
+                        >
+                            Debug: Cleanup Browser Cache
+                        </Button>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground bg-secondary/50 px-3 py-1 rounded-full border border-border/50">
+                            <Calendar className="h-4 w-4" />
+                            <span>{new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                        </div>
                     </div>
                 </div>
 
