@@ -75,7 +75,7 @@ export default function Eligibility() {
 
       // Save to backend (mockService or API)
       try {
-        api.updateEligibility('', {
+        api.updateEligibility(String(user.id), {
           isEligible: eligibilityResult.isEligible,
           lastDonationDate: formData.lastDonationDate
         }).then(res => {
